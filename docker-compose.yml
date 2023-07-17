@@ -1,15 +1,14 @@
 version: '3.1'
 services:
-  stats-server:
-    ports:
-      - "9090:9090"
-
   stats-db:
     image: postgres:14-alpine
-
-  ewm-service:
     ports:
-      - "8080:8080"
+      - "9091:5432"
+    environment:
+      POSTGRES_USER: "stats-admin"
+      POSTGRES_ADMIN: "admin"
 
-  ewm-db:
-    image: postgres:14-alpine
+  stats-server:
+    build: "./stat-server"
+    ports:
+      - "9090:9090"
