@@ -1,14 +1,16 @@
-version: '3.1'
+version: '3.8'
 services:
   stats-db:
     image: postgres:14-alpine
-    ports:
-      - "9091:5432"
     environment:
+      POSTGRES_DB: "stats"
       POSTGRES_USER: "stats-admin"
-      POSTGRES_ADMIN: "admin"
+      POSTGRES_PASSWORD: "admin"
+      PGPORT: 9091
+    ports:
+      - "9091:9091"
 
   stats-server:
-    build: "./stat-server"
+    build: "./stats-server"
     ports:
       - "9090:9090"
