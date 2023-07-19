@@ -46,14 +46,29 @@ public class MainController {
     public ResponseEntity<String> statsGet(RequestEntity<String> request, @RequestParam String start,
                                            @RequestParam String end, @RequestParam(required = false) List<String> uris,
                                            @RequestParam(defaultValue = "false") Boolean unique) {
+        // Тут тоже немного логики в контроллер попало, но если
+        // понадобиться расширить функционал - я выведу всю логику в сервис.
 
-
+        // Сгруппированная суммарная статистика.
         if (uris != null) {
             List<StatsGroupData> groupStats = stats.getStatsForUris(LocalDateTime.parse(start, formatter),
                     LocalDateTime.parse(end, formatter),
                     unique,
                     uris);
+
+            JSONObject json = new JSONObject();
+            for (StatsGroupData stat : groupStats) {
+                JSONObject statJson = new JSONObject();
+
+                statJson.put("app", stat.getApp());
+                statJson.put("uri", stat.getUri());
+                statJson.put("hits", stat.getHits());
+
+                json.append("", statJson);
+            }
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
         }
+        // Общая статистика с логами.
         List<StatsRecord> output;
 
         output = stats.getStats(LocalDateTime.parse(start, formatter),

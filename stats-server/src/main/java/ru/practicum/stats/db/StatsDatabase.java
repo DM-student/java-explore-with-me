@@ -8,6 +8,7 @@ import ru.practicum.stats.data_entity.StatsRecord;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -72,7 +73,7 @@ public class StatsDatabase {
                 result.add(stat);
             }, start, end, uri);
         }
-
+        result.sort(Comparator.comparingInt(StatsGroupData::getHits));
         return result;
     }
 }
