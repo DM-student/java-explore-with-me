@@ -32,8 +32,8 @@ public class StatsDatabase {
                 "WHERE record_timestamp >= ? AND record_timestamp <= ? " +
                 "GROUP BY app, uri;";
         if (unique) {
-            sql = "SELECT app, uri, count(*) AS hits " +
-                    "FROM (SELECT DISTINCT ON (uri, ip) * FROM stats_records) " +
+            sql = "SELECT s.app, s.uri, count(s.id) AS hits " +
+                    "FROM (SELECT DISTINCT ON (uri, ip) * FROM stats_records) AS s " +
                     "WHERE record_timestamp >= ? AND record_timestamp <= ? " +
                     "GROUP BY app, uri;";
 
@@ -58,8 +58,8 @@ public class StatsDatabase {
                     "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ? " +
                     "GROUP BY app, uri;";
             if (unique) {
-                sql = "SELECT app, uri, count(*) AS hits " +
-                        "FROM (SELECT DISTINCT ON (uri, ip) * FROM stats_records) " +
+                sql = "SELECT s.app, s.uri, count(s.id) AS hits " +
+                        "FROM (SELECT DISTINCT ON (uri, ip) * FROM stats_records) AS s " +
                         "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ? " +
                         "GROUP BY app, uri;";
 
