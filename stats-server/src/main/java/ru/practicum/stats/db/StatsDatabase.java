@@ -54,11 +54,13 @@ public class StatsDatabase {
         for (String uri : uris) {
             String sql = "SELECT app, uri, count(*) AS hits " +
                     "FROM stats_records " +
-                    "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ?;";
+                    "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ? " +
+                    "GROUP BY app, uri;";
             if (unique) {
                 sql = "SELECT DISTINCT ON (ip) app, uri, count(*) AS hits " +
                         "FROM stats_records " +
-                        "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ?;";
+                        "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ? " +
+                        "GROUP BY app, uri;";
 
             }
             jdbcTemplate.query(sql, (rs) -> {
