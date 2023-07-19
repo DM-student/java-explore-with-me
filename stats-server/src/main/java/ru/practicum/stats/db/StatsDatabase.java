@@ -25,28 +25,28 @@ public class StatsDatabase {
                 stat.getApp(), stat.getUri(), stat.getIp(), stat.getTimestamp());
     }
 
-    public List<StatsRecord> getStats(LocalDateTime start, LocalDateTime end, boolean unique) {
-        List<StatsRecord> result = new ArrayList<>();
-        String sql = "SELECT * " +
+    public List<StatsGroupData> getStats(LocalDateTime start, LocalDateTime end, boolean unique) {
+        List<StatsGroupData> result = new ArrayList<>();
+        String sql = "SELECT app, uri, count(*) AS hits " +
                 "FROM stats_records " +
-                "WHERE record_timestamp >= ? AND record_timestamp <= ?;";
+                "WHERE record_timestamp >= ? AND record_timestamp <= ? " +
+                "GROUP BY app, uri;";
         if (unique) {
-            sql = "SELECT DISTINCT ON (ip) * " +
-                    "FROM stats_records " +
-                    "WHERE record_timestamp >= ? AND record_timestamp <= ?;";
+            sql = "SELECT DISTINCT ON app, uri, count(*) AS hits " +
+                    "FROM (SELECT DISTINCT ON (ip) * FROM stats_records) " +
+                    "WHERE record_timestamp >= ? AND record_timestamp <= ? " +
+                    "GROUP BY app, uri;";
 
         }
         jdbcTemplate.query(sql, (rs) -> {
-            StatsRecord stat = new StatsRecord();
-            stat.setId(rs.getInt("id"));
+            StatsGroupData stat = new StatsGroupData();
             stat.setApp(rs.getString("app"));
             stat.setUri(rs.getString("uri"));
-            stat.setIp(rs.getString("ip"));
-            stat.setTimestamp(rs.getTimestamp("record_timestamp").toLocalDateTime());
+            stat.setHits(rs.getInt("hits"));
 
             result.add(stat);
         }, start, end);
-
+        result.sort(Comparator.comparingInt(StatsGroupData::getHits));
         return result;
     }
 
@@ -58,8 +58,8 @@ public class StatsDatabase {
                     "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ? " +
                     "GROUP BY app, uri;";
             if (unique) {
-                sql = "SELECT DISTINCT ON (ip) app, uri, count(*) AS hits " +
-                        "FROM stats_records " +
+                sql = "SELECT DISTINCT ON app, uri, count(*) AS hits " +
+                        "FROM (SELECT DISTINCT ON (ip) * FROM stats_records) " +
                         "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ? " +
                         "GROUP BY app, uri;";
 
@@ -73,6 +73,7 @@ public class StatsDatabase {
                 result.add(stat);
             }, start, end, uri);
         }
+        // Сортировка тут, ибо для каждого эндпоинта обработка идёт отдельным SQL запросом.
         result.sort(Comparator.comparingInt(StatsGroupData::getHits));
         return result;
     }
