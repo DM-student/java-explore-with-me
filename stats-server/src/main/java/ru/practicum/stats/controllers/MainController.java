@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.stats.data_entity.StatsGroupData;
 import ru.practicum.stats.data_entity.StatsRecord;
 import ru.practicum.stats.db.StatsDatabase;
 
@@ -45,17 +46,20 @@ public class MainController {
     public ResponseEntity<String> statsGet(RequestEntity<String> request, @RequestParam String start,
                                            @RequestParam String end, @RequestParam(required = false) List<String> uris,
                                            @RequestParam(defaultValue = "false") Boolean unique) {
-        List<StatsRecord> output;
-        if (uris == null) {
-            output = stats.getStats(LocalDateTime.parse(start, formatter),
-                    LocalDateTime.parse(end, formatter),
-                    unique);
-        } else {
-            output = stats.getStatsForUris(LocalDateTime.parse(start, formatter),
+
+
+        if (uris != null) {
+            List<StatsGroupData> groupStats = stats.getStatsForUris(LocalDateTime.parse(start, formatter),
                     LocalDateTime.parse(end, formatter),
                     unique,
                     uris);
         }
+        List<StatsRecord> output;
+
+        output = stats.getStats(LocalDateTime.parse(start, formatter),
+                LocalDateTime.parse(end, formatter),
+                unique);
+
 
         JSONObject json = new JSONObject();
         for (StatsRecord stat : output) {

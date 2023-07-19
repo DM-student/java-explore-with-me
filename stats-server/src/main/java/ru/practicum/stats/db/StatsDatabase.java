@@ -3,6 +3,7 @@ package ru.practicum.stats.db;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.practicum.stats.data_entity.StatsGroupData;
 import ru.practicum.stats.data_entity.StatsRecord;
 
 import java.time.LocalDateTime;
@@ -48,25 +49,23 @@ public class StatsDatabase {
         return result;
     }
 
-    public List<StatsRecord> getStatsForUris(LocalDateTime start, LocalDateTime end, boolean unique, List<String> uris) {
-        List<StatsRecord> result = new ArrayList<>();
+    public List<StatsGroupData> getStatsForUris(LocalDateTime start, LocalDateTime end, boolean unique, List<String> uris) {
+        List<StatsGroupData> result = new ArrayList<>();
         for (String uri : uris) {
-            String sql = "SELECT * " +
+            String sql = "SELECT app, uri, count(*) AS hits " +
                     "FROM stats_records " +
                     "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ?;";
             if (unique) {
-                sql = "SELECT DISTINCT ON (ip) * " +
+                sql = "SELECT DISTINCT ON (ip) app, uri, count(*) AS hits " +
                         "FROM stats_records " +
                         "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ?;";
 
             }
             jdbcTemplate.query(sql, (rs) -> {
-                StatsRecord stat = new StatsRecord();
-                stat.setId(rs.getInt("id"));
+                StatsGroupData stat = new StatsGroupData();
                 stat.setApp(rs.getString("app"));
                 stat.setUri(rs.getString("uri"));
-                stat.setIp(rs.getString("ip"));
-                stat.setTimestamp(rs.getTimestamp("record_timestamp").toLocalDateTime());
+                stat.setHits(rs.getInt("hits"));
 
                 result.add(stat);
             }, start, end, uri);
