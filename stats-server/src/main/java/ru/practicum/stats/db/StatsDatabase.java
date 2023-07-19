@@ -33,7 +33,7 @@ public class StatsDatabase {
                 "GROUP BY app, uri;";
         if (unique) {
             sql = "SELECT app, uri, count(*) AS hits " +
-                    "FROM (SELECT DISTINCT ON (ip) * FROM stats_records) " +
+                    "FROM (SELECT DISTINCT ON (uri, ip) * FROM stats_records) " +
                     "WHERE record_timestamp >= ? AND record_timestamp <= ? " +
                     "GROUP BY app, uri;";
 
@@ -59,7 +59,7 @@ public class StatsDatabase {
                     "GROUP BY app, uri;";
             if (unique) {
                 sql = "SELECT app, uri, count(*) AS hits " +
-                        "FROM (SELECT DISTINCT ON (ip) * FROM stats_records) " +
+                        "FROM (SELECT DISTINCT ON (uri, ip) * FROM stats_records) " +
                         "WHERE record_timestamp >= ? AND record_timestamp <= ? AND uri LIKE ? " +
                         "GROUP BY app, uri;";
 
@@ -74,7 +74,7 @@ public class StatsDatabase {
             }, start, end, uri);
         }
         // Сортировка тут, ибо для каждого эндпоинта обработка идёт отдельным SQL запросом.
-        result.sort(Comparator.comparingInt(StatsGroupData::getHits));
+        result.sort((data1, data2) -> data2.getHits() - data1.getHits()); // обратная сортировка
         return result;
     }
 }
