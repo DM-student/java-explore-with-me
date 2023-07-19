@@ -56,8 +56,7 @@ public class MainController {
                     LocalDateTime.parse(end, formatter),
                     unique,
                     uris);
-        }
-        else {
+        } else {
             groupStats = stats.getStats(LocalDateTime.parse(start, formatter),
                     LocalDateTime.parse(end, formatter),
                     unique);
