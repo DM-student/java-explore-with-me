@@ -49,7 +49,7 @@ public class StatsHttpClientPrototype {
         ResponseEntity<StatsGroupData[]> statsServerResponse;
 
         statsServerResponse = rest.exchange("/stats", HttpMethod.GET, requestEntity, StatsGroupData[].class, parameters);
-        return Arrays.stream(Objects.requireNonNull(statsServerResponse.getBody())).toList();
+        return Arrays.asList(statsServerResponse.getBody());
     }
 
     private void hit(StatsRecord statsToHit) throws StatsHttpClientHitException {
