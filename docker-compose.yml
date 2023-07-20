@@ -10,7 +10,7 @@ services:
     ports:
       - "9081:9081"
 
-  ewm-service-server:
+  ewm-service:
     build: "./main-service/main-service-server"
     ports:
       - "9080:9080"
