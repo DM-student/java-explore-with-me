@@ -22,7 +22,7 @@ public class StatsDatabase {
 
     public void saveStat(StatsRecord stat) {
         jdbcTemplate.update("INSERT INTO stats_records (app, uri, ip, record_timestamp) VALUES (?, ?, ?, ?);",
-                stat.getApp(), stat.getUri(), stat.getIp(), stat.getTimestamp());
+                stat.getApp(), stat.getUri(), stat.getIp(), stat.getTimestampLocalDateTime());
     }
 
     public List<StatsGroupData> getStats(LocalDateTime start, LocalDateTime end, boolean unique) {

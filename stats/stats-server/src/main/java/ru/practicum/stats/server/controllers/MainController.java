@@ -23,7 +23,7 @@ public class MainController {
     @Autowired
     private StatsDatabase stats;
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final DateTimeFormatter formatter = StatsRecord.DATE_TIME_FORMATTER;
 
     @PostMapping("/hit")
     public ResponseEntity<StatsRecord> statsHit(RequestEntity<StatsRecord> request) {
