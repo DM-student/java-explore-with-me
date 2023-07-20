@@ -24,6 +24,7 @@ public class StatsRecord {
     public LocalDateTime getTimestamp() {
         return LocalDateTime.parse(timestamp, formatter);
     }
+
     public void setTimestamp(LocalDateTime dateTime) {
         timestamp = dateTime.format(formatter);
     }

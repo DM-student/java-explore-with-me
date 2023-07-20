@@ -1,8 +1,6 @@
 package ru.practicum.stats.server.controllers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
@@ -37,8 +35,8 @@ public class MainController {
 
     @GetMapping("/stats")
     public List<StatsGroupData> statsGet(RequestEntity<String> request, @RequestParam String start,
-                                           @RequestParam String end, @RequestParam(required = false) List<String> uris,
-                                           @RequestParam(defaultValue = "false") Boolean unique) {
+                                         @RequestParam String end, @RequestParam(required = false) List<String> uris,
+                                         @RequestParam(defaultValue = "false") Boolean unique) {
         // Тут тоже немного логики в контроллер попало, но если
         // понадобиться расширить функционал - я выведу всю логику в сервис.
 

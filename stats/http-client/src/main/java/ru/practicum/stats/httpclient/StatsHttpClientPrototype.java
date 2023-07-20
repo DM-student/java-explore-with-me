@@ -28,7 +28,7 @@ public class StatsHttpClientPrototype {
                 .build();
     }
 
-    private HttpHeaders defaultHeaders(){
+    private HttpHeaders defaultHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -41,7 +41,7 @@ public class StatsHttpClientPrototype {
         parameters.put("start", start);
         parameters.put("end", start);
         parameters.put("unique", start);
-        if(uris != null) {
+        if (uris != null) {
             parameters.put("uris", uris);
         }
 
@@ -57,7 +57,7 @@ public class StatsHttpClientPrototype {
         ResponseEntity<Object> statsServerResponse;
 
         statsServerResponse = rest.exchange("/hit", HttpMethod.POST, requestEntity, Object.class);
-        if(statsServerResponse.getStatusCode() != HttpStatus.CREATED) {
+        if (statsServerResponse.getStatusCode() != HttpStatus.CREATED) {
             throw new StatsHttpClientHitException();
         }
     }
