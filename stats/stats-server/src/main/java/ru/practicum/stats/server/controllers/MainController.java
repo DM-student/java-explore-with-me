@@ -23,28 +23,20 @@ import java.util.List;
 @Slf4j
 public class MainController {
     @Autowired
-    StatsDatabase stats;
+    private StatsDatabase stats;
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @PostMapping("/hit")
-    public ResponseEntity<String> statsHit(RequestEntity<String> request) {
-        // Мне ну очень не хочется ради 5-10 строчек кода создавать отдельный сервис.
-        // А так же я в этом проекте предпочту собственные JSONы вместо ДТОшек, мне так удобнее.
-        JSONObject requestJson = new JSONObject(request.getBody());
-        StatsRecord statsRecord = new StatsRecord();
-
-        statsRecord.setApp(requestJson.getString("app"));
-        statsRecord.setUri(requestJson.getString("uri"));
-        statsRecord.setIp(requestJson.getString("ip"));
-        statsRecord.setTimestamp(LocalDateTime.parse(requestJson.getString("timestamp"), formatter));
+    public ResponseEntity<StatsRecord> statsHit(RequestEntity<StatsRecord> request) {
+        StatsRecord statsRecord = request.getBody();
 
         stats.saveStat(statsRecord);
-        return new ResponseEntity<>(requestJson.toString(), HttpStatus.CREATED);
+        return new ResponseEntity<>(statsRecord, HttpStatus.CREATED);
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<String> statsGet(RequestEntity<String> request, @RequestParam String start,
+    public List<StatsGroupData> statsGet(RequestEntity<String> request, @RequestParam String start,
                                            @RequestParam String end, @RequestParam(required = false) List<String> uris,
                                            @RequestParam(defaultValue = "false") Boolean unique) {
         // Тут тоже немного логики в контроллер попало, но если
@@ -61,16 +53,6 @@ public class MainController {
                     LocalDateTime.parse(end, formatter),
                     unique);
         }
-        JSONArray json = new JSONArray();
-        for (StatsGroupData stat : groupStats) {
-            JSONObject statJson = new JSONObject();
-
-            statJson.put("app", stat.getApp());
-            statJson.put("uri", stat.getUri());
-            statJson.put("hits", stat.getHits());
-
-            json.put(statJson);
-        }
-        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+        return groupStats;
     }
 }

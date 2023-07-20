@@ -14,5 +14,6 @@
     <modules>
         <module>stats-server</module>
         <module>stats-dto</module>
+        <module>http-client</module>
     </modules>
 </project>
