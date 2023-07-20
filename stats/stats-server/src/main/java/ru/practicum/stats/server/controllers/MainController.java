@@ -1,4 +1,4 @@
-package ru.practicum.stats.controllers;
+package ru.practicum.stats.server.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.stats.data_entity.StatsGroupData;
-import ru.practicum.stats.data_entity.StatsRecord;
-import ru.practicum.stats.db.StatsDatabase;
+import ru.practicum.stats.dto.StatsGroupData;
+import ru.practicum.stats.dto.StatsRecord;
+import ru.practicum.stats.server.db.StatsDatabase;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

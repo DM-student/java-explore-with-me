@@ -1,10 +1,10 @@
-package ru.practicum.stats.db;
+package ru.practicum.stats.server.db;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.practicum.stats.data_entity.StatsGroupData;
-import ru.practicum.stats.data_entity.StatsRecord;
+import ru.practicum.stats.dto.StatsGroupData;
+import ru.practicum.stats.dto.StatsRecord;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

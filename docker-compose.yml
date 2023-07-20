@@ -1,5 +1,20 @@
 version: '3.8'
 services:
+  main-service-db:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_DB: "main-service"
+      POSTGRES_USER: "main-service-admin"
+      POSTGRES_PASSWORD: "admin"
+      PGPORT: 9081
+    ports:
+      - "9081:9081"
+
+  main-service-server:
+    build: "./main-service/main-service-server"
+    ports:
+      - "9080:9080"
+
   stats-db:
     image: postgres:14-alpine
     environment:
@@ -11,6 +26,6 @@ services:
       - "9091:9091"
 
   stats-server:
-    build: "./stats-server"
+    build: "./stats/stats-server"
     ports:
       - "9090:9090"
