@@ -35,7 +35,7 @@ public class StatsHttpClientPrototype {
         return headers;
     }
 
-    private List<StatsGroupData> get(LocalDateTime start, LocalDateTime end, @Nullable List<String> uris, boolean unique) {
+    public List<StatsGroupData> get(LocalDateTime start, LocalDateTime end, @Nullable List<String> uris, boolean unique) {
         Map<String, Object> parameters = new HashMap<>();
 
         parameters.put("start", start);
@@ -52,7 +52,7 @@ public class StatsHttpClientPrototype {
         return Arrays.asList(statsServerResponse.getBody());
     }
 
-    private void hit(StatsRecord statsToHit) throws StatsHttpClientHitException {
+    public void hit(StatsRecord statsToHit) throws StatsHttpClientHitException {
         HttpEntity<StatsRecord> requestEntity = new HttpEntity<>(statsToHit, defaultHeaders());
         ResponseEntity<Object> statsServerResponse;
 
