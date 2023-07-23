@@ -5,10 +5,10 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static ru.practicum.stats.dto.StatsConstants.DATE_TIME_FORMATTER;
+
 @Data
 public class StatsRecord {
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     private Integer id;
     private String app;
     private String uri;
