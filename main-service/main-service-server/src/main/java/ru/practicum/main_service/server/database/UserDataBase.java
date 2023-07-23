@@ -21,7 +21,7 @@ public class UserDataBase {
 
     private List<UserDto> mapUsers(SqlRowSet rs) {
         List<UserDto> output = new ArrayList<>();
-        while(rs.next()) {
+        while (rs.next()) {
             UserDto user = new UserDto();
             user.setId(rs.getInt("id"));
             user.setEmail(rs.getString("email"));
@@ -36,7 +36,7 @@ public class UserDataBase {
                 "SELECT * FROM users WHERE id = ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, id);
         List<UserDto> output = mapUsers(rs);
-        if(output.isEmpty()) {
+        if (output.isEmpty()) {
             throw new NotFoundError("Не найден пользователь.", id);
         }
         return output.get(0);
@@ -56,6 +56,7 @@ public class UserDataBase {
                 "WHERE id = ?";
         jdbcTemplate.update(sqlQuery, id);
     }
+
     public UserDto createUser(UserDto user) {
         String sqlQuery = "INSERT INTO users (email, name) " +
                 "VALUES (?, ?) " +

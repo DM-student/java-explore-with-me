@@ -2,7 +2,6 @@ package ru.practicum.main_service.server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.RequestEntity;
 import org.springframework.stereotype.Component;
 import ru.practicum.main_service.server.utility.StatsClient;
 import ru.practicum.stats.dto.StatsRecord;

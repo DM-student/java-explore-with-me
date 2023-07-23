@@ -1,6 +1,6 @@
 package ru.practicum.main_service.server.utility.errors;
 
-public class BadRequestError extends BaseError{
+public class BadRequestError extends BaseError {
     public BadRequestError(String message) {
         super(message);
     }

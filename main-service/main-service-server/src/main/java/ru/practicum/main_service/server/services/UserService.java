@@ -18,13 +18,12 @@ public class UserService {
     UserDataBase userDB;
 
     public List<UserDto> getUsers(List<Integer> ids, int from, int size) {
-        if(ids != null) {
+        if (ids != null) {
             List<UserDto> users = new ArrayList<>();
-            for(Integer id : ids) {
+            for (Integer id : ids) {
                 try {
                     users.add(userDB.getUser(id));
-                }
-                catch (NotFoundError e) {
+                } catch (NotFoundError e) {
                     log.info("Была совершена попытка ");
                 }
             }
@@ -40,7 +39,7 @@ public class UserService {
     }
 
     public UserDto createUser(UserDto user) {
-        if(!user.isValid()) {
+        if (!user.isValid()) {
             throw new BadRequestError("Ошибка валидации входящих данных.", user);
         }
         return userDB.createUser(user);
