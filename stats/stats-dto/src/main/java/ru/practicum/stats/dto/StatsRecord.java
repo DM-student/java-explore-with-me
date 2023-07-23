@@ -3,7 +3,6 @@ package ru.practicum.stats.dto;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import static ru.practicum.stats.dto.StatsConstants.DATE_TIME_FORMATTER;
 
