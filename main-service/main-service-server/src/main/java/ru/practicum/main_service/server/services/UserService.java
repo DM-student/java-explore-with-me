@@ -3,7 +3,7 @@ package ru.practicum.main_service.server.services;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.practicum.main_service.server.database.UserDataBase;
+import ru.practicum.main_service.server.database.UserDatabase;
 import ru.practicum.main_service.server.dto.UserDto;
 import ru.practicum.main_service.server.utility.errors.BadRequestError;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
@@ -15,7 +15,7 @@ import java.util.List;
 @Slf4j
 public class UserService {
     @Autowired
-    UserDataBase userDB;
+    private UserDatabase userDB;
 
     public List<UserDto> getUsers(List<Integer> ids, int from, int size) {
         if (ids != null) {
@@ -24,7 +24,7 @@ public class UserService {
                 try {
                     users.add(userDB.getUser(id));
                 } catch (NotFoundError e) {
-                    log.info("Была совершена попытка ");
+                    log.info("Была совершена попытка получить несуществующего пользователя.");
                 }
             }
             return users;

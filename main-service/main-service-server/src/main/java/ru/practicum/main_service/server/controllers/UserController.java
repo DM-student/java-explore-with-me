@@ -25,7 +25,7 @@ public class UserController {
             HttpServletRequest servletRequest,
             @RequestParam(required = false) List<Integer> ids,
             @RequestParam(defaultValue = "0") int from,
-            @RequestParam(defaultValue = "0") int size
+            @RequestParam(defaultValue = "10") int size
     ) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 

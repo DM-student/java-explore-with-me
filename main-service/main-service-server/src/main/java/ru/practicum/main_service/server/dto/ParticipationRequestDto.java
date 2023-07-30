@@ -1,15 +1,17 @@
 package ru.practicum.main_service.server.dto;
 
 import lombok.Data;
+import ru.practicum.main_service.server.utility.Helpers;
 
+import java.time.format.DateTimeFormatter;
 
-// В некоторых случаях я не создавал "краткую" версию ДТОшки. Краткие ДТОшки у меня только для ситуаций,
-// где нужно избегать "зацикленность".
 @Data
-public class UserDto {
+public class ParticipationRequestDto {
     private Integer id;
-    private String name;
-    private String email;
+    private String created;
+    private Integer event;
+    private Integer requester;
+    private String status;
 
     /**
      * Служит для валидации объекта, перед его публикацией.
@@ -18,8 +20,9 @@ public class UserDto {
      * @return Ответ в виде булева значения.
      */
     public boolean isValid() {
-        if(name == null) return false;
-        if(email == null) return false;
+        if(created == null) return false;
+        if(event == null) return false;
+        if(requester == null) return false;
 
         return isValidSkipNulls();
     }
@@ -31,14 +34,16 @@ public class UserDto {
      * @return Ответ в виде булева значения.
      */
     public boolean isValidSkipNulls() {
-        if (name != null) {
-            if (name.isBlank()) return false;
-            if (name.length() > 64) return false;
-        }
+        DateTimeFormatter formatter = MainServiceDtoConstants.DATE_TIME_FORMATTER;
 
-        if (email != null) {
-            if (email.isBlank()) return false;
-            if (email.length() > 256) return false;
+        if (created != null) {
+            if(Helpers.validateDateTimeFormat(created, formatter))  return false;
+        }
+        if (event != null) {
+            if (event < 0) return false;
+        }
+        if (requester != null) {
+            if (requester < 0) return false;
         }
 
         return true;

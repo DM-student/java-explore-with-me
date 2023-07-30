@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class UserDataBase {
+public class UserDatabase {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public UserDataBase(JdbcTemplate jdbcTemplate) {
+    public UserDatabase(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
