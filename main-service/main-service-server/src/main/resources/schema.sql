@@ -27,8 +27,7 @@ CREATE TABLE IF NOT EXISTS events (
         published_date TIMESTAMP,
         request_moderation BOOLEAN NOT NULL,
         state TEXT NOT NULL,
-        title TEXT NOT NULL,
-        views INTEGER NOT NULL
+        title TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS participation_requests (
@@ -50,5 +49,10 @@ CREATE TABLE IF NOT EXISTS compilations (
 CREATE TABLE IF NOT EXISTS events_to_compilations (
         event_id BIGINT REFERENCES events(id) ON DELETE CASCADE,
         compilation_id BIGINT REFERENCES compilations(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS views_to_ips (
+        event_id BIGINT REFERENCES events(id) ON DELETE CASCADE,
+        ip TEXT NOT NULL
 );
 

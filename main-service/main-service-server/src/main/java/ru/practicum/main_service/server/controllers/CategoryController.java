@@ -1,6 +1,8 @@
 package ru.practicum.main_service.server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.main_service.server.dto.CategoryDto;
 import ru.practicum.main_service.server.services.CategoryService;
@@ -12,7 +14,7 @@ import java.util.List;
 @RestController
 public class CategoryController {
     @Autowired
-    CategoryService service;
+    private CategoryService service;
 
     @Autowired
     private EarlyRequestHandler earlyRequestHandler;
@@ -35,11 +37,11 @@ public class CategoryController {
     }
 
     @PostMapping("/admin/categories")
-    public CategoryDto post(HttpServletRequest servletRequest,
-                                    @RequestBody CategoryDto category) throws StatsHttpClientHitException {
+    public ResponseEntity<CategoryDto> post(HttpServletRequest servletRequest,
+                                            @RequestBody CategoryDto category) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
-        return service.post(category);
+        return new ResponseEntity<>(service.post(category), HttpStatus.CREATED);
     }
 
     @PatchMapping("/admin/categories/{catId}")

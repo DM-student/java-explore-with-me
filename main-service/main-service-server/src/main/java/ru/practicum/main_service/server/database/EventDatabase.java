@@ -1,5 +1,6 @@
 package ru.practicum.main_service.server.database;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -7,10 +8,13 @@ import org.springframework.stereotype.Component;
 import ru.practicum.main_service.server.dto.*;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 public class EventDatabase {
 
@@ -54,14 +58,14 @@ public class EventDatabase {
             event.setPaid(rs.getBoolean("paid"));
             event.setParticipantLimit(rs.getInt("participant_limit"));
 
-            if(rs.getObject("") != null) {
+            if(rs.getObject("published_date") != null) {
                 event.setPublishedOn(formatter.format(rs.getTimestamp("published_date").toLocalDateTime()));
             }
 
             event.setRequestModeration(rs.getBoolean("request_moderation"));
             event.setState(rs.getString("state"));
             event.setTitle(rs.getString("title"));
-            event.setViews(rs.getInt("views"));
+            event.setViews(getViews(rs.getInt("id")));
 
             output.add(event);
         }
@@ -112,11 +116,9 @@ public class EventDatabase {
                 "location_lon, " +
                 "paid, " +
                 "participant_limit, " +
-                "published_date, " +
                 "request_moderation, " +
                 "state, " +
-                "title, " +
-                "views) " +
+                "title) " +
                 "VALUES (?, " + // annotation
                 "?, " + // category_id
                 "?, " + // created_on
@@ -129,15 +131,14 @@ public class EventDatabase {
                 "?, " + // participant_limit
                 "?, " + // request_moderation
                 "?, " + // state
-                "?, " + // title
-                "?) " + // views
+                "?) " + // title
                 "RETURNING *";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery,
                 event.getAnnotation(),
                 event.getCategory(),
-                formatter.parse(event.getCreatedOn()),
+                Timestamp.valueOf(LocalDateTime.parse(event.getCreatedOn(), formatter)),
                 event.getDescription(),
-                formatter.parse(event.getEventDate()),
+                Timestamp.valueOf(LocalDateTime.parse(event.getEventDate(), formatter)),
                 event.getInitiator(),
                 event.getLocation().getLat(),
                 event.getLocation().getLon(),
@@ -145,8 +146,7 @@ public class EventDatabase {
                 event.getParticipantLimit(),
                 event.getRequestModeration(),
                 event.getState(),
-                event.getTitle(),
-                0); // Просмотры
+                event.getTitle());
         return mapEvents(rs).get(0);
     }
 
@@ -196,6 +196,40 @@ public class EventDatabase {
                     "UPDATE events SET title = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getTitle(), event.getId());
         }
+
+        if(event.getState() != null) {
+            String sqlQuery =
+                    "UPDATE events SET state = ? WHERE id = ?;";
+            jdbcTemplate.update(sqlQuery, event.getState(), event.getId());
+        }
+        if(event.getPublishedOn() != null) {
+            String sqlQuery =
+                    "UPDATE events SET published_date = ? WHERE id = ?;";
+            jdbcTemplate.update(sqlQuery,
+                    Timestamp.valueOf(LocalDateTime.parse(event.getPublishedOn(), formatter)),
+                    event.getId());
+        }
         return getEvent(event.getId());
+    }
+
+    public void incrementViews(int eventId, String ip) {
+        String ipCheckSqlQuery =
+                "SELECT * FROM views_to_ips WHERE event_id = ? AND ip = ?;";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(ipCheckSqlQuery, eventId, ip);
+        if(rs.next()) {
+            return;
+        }
+        String sqlQuery =
+                "INSERT INTO views_to_ips (event_id, ip) VALUES (? , ?);";
+
+        jdbcTemplate.update(sqlQuery, eventId, ip);
+    }
+
+    public int getViews(int eventId) {
+        String ipCheckSqlQuery =
+                "SELECT count(*) AS count_views FROM views_to_ips WHERE event_id = ?;";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(ipCheckSqlQuery, eventId);
+        rs.next();
+        return rs.getInt("count_views");
     }
 }

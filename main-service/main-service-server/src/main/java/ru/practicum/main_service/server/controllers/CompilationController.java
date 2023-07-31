@@ -1,6 +1,8 @@
 package ru.practicum.main_service.server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.main_service.server.dto.CategoryDto;
 import ru.practicum.main_service.server.dto.CompilationDto;
@@ -15,7 +17,7 @@ import java.util.List;
 @RestController
 public class CompilationController {
     @Autowired
-    CompilationService service;
+    private CompilationService service;
 
     @Autowired
     private EarlyRequestHandler earlyRequestHandler;
@@ -42,11 +44,11 @@ public class CompilationController {
     }
 
     @PostMapping("/admin/compilations")
-    public CompilationDtoResponse post(HttpServletRequest servletRequest,
-                                    @RequestBody CompilationDto compilationDto) throws StatsHttpClientHitException {
+    public ResponseEntity<CompilationDtoResponse> post(HttpServletRequest servletRequest,
+                                                       @RequestBody CompilationDto compilationDto) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
-        return service.post(compilationDto);
+        return new ResponseEntity<>(service.post(compilationDto), HttpStatus.CREATED);
     }
 
     @PatchMapping("/admin/compilations/{compId}")

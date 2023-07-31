@@ -42,7 +42,7 @@ public class UserController {
         earlyRequestHandler.handle(servletRequest);
 
         UserDto user = userService.createUser(request.getBody());
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/admin/users/{userId}")

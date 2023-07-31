@@ -10,6 +10,7 @@ import ru.practicum.main_service.server.dto.EventDtoResponse;
 import ru.practicum.main_service.server.dto.MainServiceDtoConstants;
 import ru.practicum.main_service.server.dto.ParticipationRequestDto;
 import ru.practicum.main_service.server.utility.errors.BadRequestError;
+import ru.practicum.main_service.server.utility.errors.ConflictError;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,17 +32,28 @@ public class RequestsService {
     public ParticipationRequestDto createRequest(int userId, int eventId) {
         EventDtoResponse event = eventDatabase.getEvent(eventId);
         userDatabase.getUser(userId);
+
         if (userId == event.getInitiator().getId()) {
-            throw new BadRequestError("Заявку на участие нельзя заполнить на своё событие.");
+            throw new ConflictError("Заявку на участие нельзя заполнить на своё событие.");
+        }
+        if(database.hasRequestFromUser(eventId, userId)) {
+            throw new ConflictError("Уже есть заявка от данного пользователя.");
         }
         ParticipationRequestDto request = new ParticipationRequestDto();
         request.setRequester(userId);
         request.setEvent(eventId);
         request.setCreated(formatter.format(LocalDateTime.now()));
+
+        if(event.getParticipantLimit() == 0) { // Исходя из постман-тестов - в этом случае премодерация игнорируется.
+            request.setStatus("CONFIRMED");
+            return database.createRequest(request);
+        } if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
+            throw new ConflictError("Лимит заявок уже достигнут.");
+        }
+
         if(event.getRequestModeration()) {
             request.setStatus("PENDING");
-        }
-        else {
+        } else {
             request.setStatus("CONFIRMED");
         }
         return database.createRequest(request);
@@ -69,7 +81,19 @@ public class RequestsService {
                 "rejectedRequests", database.getRequestsForEvent(eventId, "REJECTED"));
     }
 
-    public List<ParticipationRequestDto> getRequests(int userId, int eventId) {
+    public ParticipationRequestDto cancelRequest(int userId, int requestId) {
+        if(database.getRequest(requestId).getRequester() != userId) {
+            throw new ConflictError("Заявка не принадлежит указанному пользователю.");
+        }
+        return database.updateRequestStatus(requestId, "CANCELED");
+    }
+
+    public List<ParticipationRequestDto> getRequests(int userId) {
+        userDatabase.getUser(userId);
+        return database.getRequestsForUser(userId);
+    }
+
+    public List<ParticipationRequestDto> getRequestsForEvent(int userId, int eventId) {
         EventDtoResponse event = eventDatabase.getEvent(eventId);
 
         if(event.getInitiator().getId() != userId) {

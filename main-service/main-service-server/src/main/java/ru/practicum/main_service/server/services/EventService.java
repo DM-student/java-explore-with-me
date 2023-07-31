@@ -8,6 +8,7 @@ import ru.practicum.main_service.server.dto.EventDto;
 import ru.practicum.main_service.server.dto.EventDtoResponse;
 import ru.practicum.main_service.server.dto.MainServiceDtoConstants;
 import ru.practicum.main_service.server.utility.errors.BadRequestError;
+import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,19 +33,21 @@ public class EventService {
         return database.getEvent(id);
     }
 
-    public EventDtoResponse getByIdPublished(int id) {
+    public EventDtoResponse getByIdPublished(int id, String ip) {
         EventDtoResponse event = database.getEvent(id);
         if(!Objects.equals(event.getState(), "PUBLISHED")) {
-            throw new BadRequestError("Событие не найдено среди опубликованных.");
+            throw new NotFoundError("Событие не найдено среди опубликованных.");
         }
+        database.incrementViews(id, ip);
         return event;
     }
 
-    public EventDtoResponse getByIdForUser(int eventId, int userId) {
+    public EventDtoResponse getByIdForUser(int eventId, int userId, String ip) {
         EventDtoResponse event = database.getEvent(eventId);
         if(event.getInitiator().getId() != userId) {
             throw new BadRequestError("В событиях пользователя не найдено запрошенное.");
         }
+        database.incrementViews(eventId, ip);
         return event;
     }
 
@@ -65,18 +68,21 @@ public class EventService {
             throw new BadRequestError("Вы не являетесь владельцем события.");
         }
 
-        eventToPost.setState(null);
-        return postEvent(eventToPost);
+        return patchEvent(eventToPost);
     }
 
     public EventDtoResponse patchEvent(EventDto eventToPost) {
         eventToPost.setState(null); // Так как состояние меняется через stateAction.
         if(eventToPost.getStateAction() != null) {
             if (eventToPost.getStateAction().equals("PUBLISH_EVENT")) {
+                eventToPost.setPublishedOn(formatter.format(LocalDateTime.now()));
                 eventToPost.setState("PUBLISHED");
             }
             if (eventToPost.getStateAction().equals("REJECT_EVENT")) {
                 eventToPost.setState("CANCELED");
+            }
+            if (eventToPost.getStateAction().equals("SEND_TO_REVIEW")) {
+                eventToPost.setState("PENDING");
             }
         }
         if (!eventToPost.isValidSkipNulls()) {
@@ -91,9 +97,19 @@ public class EventService {
     }
 
 
-    public List<EventDtoResponse> getAllAdmin(String text, Boolean paid, List<Integer> categories,
+    public List<EventDtoResponse> getAll(String text, Boolean paid, List<Integer> categories,
                                               String rangeStart, String rangeEnd, boolean onlyAvailable,
                                               Sort sort, int from, int size) {
+        // Валидация данных.
+
+        if (rangeStart != null && rangeEnd != null) {
+            if (LocalDateTime.parse(rangeStart, formatter).isAfter(LocalDateTime.parse(rangeEnd, formatter))) {
+                throw new BadRequestError("В поисковом запросе дата начала позже даты конца.",
+                        rangeStart + " | " + rangeEnd);
+            }
+        }
+
+        // Сам поиск
         StringBuilder query = new StringBuilder();
         boolean shouldAddAnd = false;
 
@@ -107,25 +123,26 @@ public class EventService {
             query.append("%' OR ");
             query.append("description LIKE '%");
             query.append(text);
-            query.append("%')");
+            query.append("%') ");
 
             shouldAddAnd = true;
         }
 
         if (shouldAddAnd) {
-            query.append("AND");
+            query.append("AND ");
             shouldAddAnd = false;
         }
 
         if(paid != null) {
             query.append("paid = ");
             query.append(paid);
+            query.append(" ");
 
             shouldAddAnd = true;
         }
 
         if (shouldAddAnd) {
-            query.append("AND");
+            query.append("AND ");
             shouldAddAnd = false;
         }
 
@@ -134,54 +151,159 @@ public class EventService {
             query.append("(");
             for (int i = 0; i < categories.size(); i++) {
                 if(i > 0) {
-                    query.append("OR");
+                    query.append("OR ");
                 }
                 query.append("category_id = ");
                 query.append(categories.get(i));
+                query.append(" ");
             }
-            query.append(")");
+            query.append(") ");
             shouldAddAnd = true;
         }
 
         if (shouldAddAnd) {
-            query.append("AND");
+            query.append("AND ");
             shouldAddAnd = false;
         }
 
         // Даты...
         if (rangeStart != null) {
-            query.append("event_date >= ");
+            query.append("event_date >= '");
             query.append(rangeStart);
+            query.append("' ");
             shouldAddAnd = true;
         }
 
         if (shouldAddAnd) {
-            query.append("AND");
+            query.append("AND ");
             shouldAddAnd = false;
         }
 
         if (rangeEnd != null) {
-            query.append("event_date < ");
+            query.append("event_date < '");
             query.append(rangeEnd);
+            query.append("' ");
             shouldAddAnd = true;
         }
 
         if (shouldAddAnd) {
-            query.append("AND");
+            query.append("AND ");
             shouldAddAnd = false;
         }
+
+        query.append("state = 'PUBLISHED' ");
 
         if (sort != null) {
             query.append("ORDER BY ");
             query.append(sort);
-            shouldAddAnd = true;
         }
+
         List<EventDtoResponse> output = database.getEvents(from, size, query.toString());
         if(onlyAvailable) {
             return output.stream().filter(event -> event.getConfirmedRequests() < event.getParticipantLimit())
                     .collect(Collectors.toList());
         }
         return output;
+    }
+
+    public List<EventDtoResponse> getAllAdmin(List<Integer> users, List<String> states, List<Integer> categories,
+                                         String rangeStart, String rangeEnd,
+                                         int from, int size) {
+        // Валидация данных.
+
+        if (rangeStart != null && rangeEnd != null) {
+            if (LocalDateTime.parse(rangeStart, formatter).isAfter(LocalDateTime.parse(rangeEnd, formatter))) {
+                throw new BadRequestError("В поисковом запросе дата начала позже даты конца.",
+                        rangeStart + " | " + rangeEnd);
+            }
+        }
+
+        // Сам поиск
+        StringBuilder query = new StringBuilder();
+        boolean shouldAddAnd = false;
+
+        // Юзеры
+
+        if(users != null && !users.isEmpty()) {
+            query.append("(");
+            for (int i = 0; i < users.size(); i++) {
+                if(i > 0) {
+                    query.append("OR ");
+                }
+                query.append("initiator_id = ");
+                query.append(users.get(i));
+                query.append(" ");
+            }
+            query.append(") ");
+            shouldAddAnd = true;
+        }
+
+        if (shouldAddAnd) {
+            query.append("AND ");
+            shouldAddAnd = false;
+        }
+
+        // Состояния
+
+        if(states != null && !states.isEmpty()) {
+            query.append("(");
+            for (int i = 0; i < states.size(); i++) {
+                if(i > 0) {
+                    query.append("OR ");
+                }
+                query.append("state = '"); // Конечно есть опасность инъекции,
+                query.append(states.get(i)); // но за-то полностью на стороне БД фильтрация происходить будет.
+                query.append("' ");
+            }
+            query.append(") ");
+            shouldAddAnd = true;
+        }
+
+        if (shouldAddAnd) {
+            query.append("AND ");
+            shouldAddAnd = false;
+        }
+
+        // Категории
+        if(categories != null && !categories.isEmpty()) {
+            query.append("(");
+            for (int i = 0; i < categories.size(); i++) {
+                if(i > 0) {
+                    query.append("OR ");
+                }
+                query.append("category_id = ");
+                query.append(categories.get(i));
+                query.append(" ");
+            }
+            query.append(") ");
+            shouldAddAnd = true;
+        }
+
+        if (shouldAddAnd) {
+            query.append("AND ");
+            shouldAddAnd = false;
+        }
+
+        // Даты
+        if (rangeStart != null) {
+            query.append("event_date >= '");
+            query.append(rangeStart);
+            query.append("' ");
+            shouldAddAnd = true;
+        }
+
+        if (shouldAddAnd) {
+            query.append("AND ");
+            shouldAddAnd = false;
+        }
+
+        if (rangeEnd != null) {
+            query.append("event_date <= '");
+            query.append(rangeEnd);
+            query.append("' ");
+        }
+
+        return database.getEvents(from, size, query.toString());
     }
 }
 

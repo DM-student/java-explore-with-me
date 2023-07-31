@@ -1,6 +1,7 @@
 package ru.practicum.main_service.server.database;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,8 @@ import ru.practicum.main_service.server.dto.ParticipationRequestDto;
 import ru.practicum.main_service.server.dto.UserDto;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +34,7 @@ public class ParticipationRequestsDatabase {
             requestDto.setCreated(rs.getTimestamp("created_on").toLocalDateTime().format(formatter));
             requestDto.setEvent(rs.getInt("event_id"));
             requestDto.setRequester(rs.getInt("requester_id"));
-            requestDto.setStatus("status");
+            requestDto.setStatus(rs.getString("status"));
             output.add(requestDto);
         }
         return output;
@@ -54,6 +57,15 @@ public class ParticipationRequestsDatabase {
                 "WHERE requester_id = ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, id);
         return mapRequests(rs);
+    }
+
+    public boolean hasRequestFromUser(int eventId, int userId) {
+        String sqlQuery = "SELECT * " +
+                "FROM participation_requests " +
+                "WHERE event_id = ? AND requester_id = ?;";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, eventId, userId);
+
+        return !mapRequests(rs).isEmpty();
     }
 
     public List<ParticipationRequestDto> getRequestsForEvent(int id) {
@@ -82,11 +94,12 @@ public class ParticipationRequestsDatabase {
         String sqlQuery = "INSERT INTO participation_requests " +
                 "(created_on, " +
                 "event_id, " +
-                "requester_id" +
+                "requester_id, " +
                 "status) " +
-                "VALUES (?, ?) " +
+                "VALUES (?, ?, ?, ?) " +
                 "RETURNING *";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, request.getCreated(),
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery,
+                Timestamp.valueOf(LocalDateTime.parse(request.getCreated(), formatter)),
                 request.getEvent(), request.getRequester(), request.getStatus());
         return mapRequests(rs).get(0);
     }
@@ -99,12 +112,13 @@ public class ParticipationRequestsDatabase {
     }
 
     public int getConfirmedRequestsCountForEvent(int id) {
-        final String confirmed = "confirmed";
+        final String confirmed = "CONFIRMED";
 
         String sqlQuery = "SELECT COUNT(*) AS amount " +
                 "FROM participation_requests " +
-                "WHERE status like ? AND id = ?;";
+                "WHERE status like ? AND event_id = ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, confirmed, id);
+        rs.next();
         return rs.getInt("amount");
     }
 

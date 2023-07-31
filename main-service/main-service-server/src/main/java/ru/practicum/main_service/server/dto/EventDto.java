@@ -17,6 +17,7 @@ public class EventDto {
     private LocationDto location;
     private Boolean paid;
     private Integer participantLimit;
+    private String publishedOn;
     private Boolean requestModeration;
     private String state;
     private String title;
