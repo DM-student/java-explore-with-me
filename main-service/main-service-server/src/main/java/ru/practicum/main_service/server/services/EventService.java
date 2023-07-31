@@ -70,7 +70,7 @@ public class EventService {
             throw new ConflictError("Несанкционированная попытка изменить опубликованное событие.", eventToPost);
         }
 
-        if (eventToPost.getInitiator() != event.getInitiator().getId()) {
+        if (!Objects.equals(eventToPost.getInitiator(), event.getInitiator().getId())) {
             throw new BadRequestError("Вы не являетесь владельцем события.");
         }
 

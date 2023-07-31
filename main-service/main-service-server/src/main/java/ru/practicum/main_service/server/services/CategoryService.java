@@ -8,6 +8,7 @@ import ru.practicum.main_service.server.utility.errors.BadRequestError;
 import ru.practicum.main_service.server.utility.errors.ConflictError;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class CategoryService {
@@ -40,7 +41,7 @@ public class CategoryService {
             throw new BadRequestError("Ошибка объекта.", category);
         }
         List<CategoryDto> similarCategories = database.getCategoriesByName(category.getName());
-        if (!similarCategories.isEmpty() && similarCategories.get(0).getId() != category.getId()) {
+        if (!similarCategories.isEmpty() && !Objects.equals(similarCategories.get(0).getId(), category.getId())) {
             throw new ConflictError("Название категории уже занято.", category);
         }
         return database.createCategory(category);
@@ -51,7 +52,7 @@ public class CategoryService {
             throw new BadRequestError("Ошибка объекта.", category);
         }
         List<CategoryDto> similarCategories = database.getCategoriesByName(category.getName());
-        if (!similarCategories.isEmpty() && similarCategories.get(0).getId() != category.getId()) {
+        if (!similarCategories.isEmpty() && !Objects.equals(similarCategories.get(0).getId(), category.getId())) {
             throw new ConflictError("Название категории уже занято.", category);
         }
         return database.patchCategory(category);

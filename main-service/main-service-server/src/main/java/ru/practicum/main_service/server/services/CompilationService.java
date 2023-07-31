@@ -9,6 +9,7 @@ import ru.practicum.main_service.server.utility.errors.BadRequestError;
 import ru.practicum.main_service.server.utility.errors.ConflictError;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CompilationService {
@@ -41,7 +42,7 @@ public class CompilationService {
             throw new BadRequestError("Ошибка объекта.", compilation);
         }
         List<CompilationDtoResponse> similarCompilations = database.getByTitle(compilation.getTitle());
-        if (!similarCompilations.isEmpty() && similarCompilations.get(0).getId() != compilation.getId()) {
+        if (!similarCompilations.isEmpty() && !Objects.equals(similarCompilations.get(0).getId(), compilation.getId())) {
             throw new ConflictError("Название подборки уже занято.", compilation);
         }
         return database.createCompilation(compilation);
@@ -52,7 +53,7 @@ public class CompilationService {
             throw new BadRequestError("Ошибка объекта.", compilation);
         }
         List<CompilationDtoResponse> similarCompilations = database.getByTitle(compilation.getTitle());
-        if (!similarCompilations.isEmpty() && similarCompilations.get(0).getId() != compilation.getId()) {
+        if (!similarCompilations.isEmpty() && !Objects.equals(similarCompilations.get(0).getId(), compilation.getId())) {
             throw new ConflictError("Название подборки уже занято.", compilation);
         }
         return database.patchCompilation(compilation);
