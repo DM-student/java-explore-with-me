@@ -1,7 +1,6 @@
 package ru.practicum.main_service.server.dto;
 
 import lombok.Data;
-import ru.practicum.main_service.server.utility.Helpers;
 
 import java.util.List;
 
@@ -19,8 +18,8 @@ public class CompilationDto {
      * @return Ответ в виде булева значения.
      */
     public boolean isValid() {
-        if(title == null) return false;
-        if(pinned == null) return false;
+        if (title == null) return false;
+        if (pinned == null) return false;
 
         return isValidSkipNulls();
     }

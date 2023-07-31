@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.regex.Pattern;
 
 @Slf4j
 public class Helpers {
@@ -30,15 +29,15 @@ public class Helpers {
         Я потратил на это не мало часов и не хочу их больше трогать.
          */
         try {
-            if(emailAddress.length() > 254) return false;
+            if (emailAddress.length() > 254) return false;
             String localPart = emailAddress.split("@")[0];
             String domainPart = emailAddress.split("@")[1];
             String[] domainSeparated = domainPart.split("\\.");
 
-            if(localPart.length() > 64) return false;
-            if(domainSeparated[domainSeparated.length - 2].length() > 63) return false;
-            if(domainSeparated[domainSeparated.length - 2].length() < 1) return false;
-            if(domainSeparated[domainSeparated.length - 1].length() < 2) return false;
+            if (localPart.length() > 64) return false;
+            if (domainSeparated[domainSeparated.length - 2].length() > 63) return false;
+            if (domainSeparated[domainSeparated.length - 2].length() < 1) return false;
+            if (domainSeparated[domainSeparated.length - 1].length() < 2) return false;
 
             return true;
         } catch (Throwable e) {

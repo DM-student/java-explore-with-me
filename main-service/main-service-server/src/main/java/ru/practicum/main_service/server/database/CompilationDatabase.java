@@ -75,6 +75,7 @@ public class CompilationDatabase {
 
         return mapCompilations(rs);
     }
+
     public List<CompilationDtoResponse> getAllCompilations(int from, int size, boolean pinned) {
         String sqlQuery =
                 "SELECT * " +
@@ -93,13 +94,13 @@ public class CompilationDatabase {
     }
 
     private void linkEvents(int compilationId, List<Integer> events) {
-        if(events == null) return;
+        if (events == null) return;
 
         String sqlQuery = "DELETE FROM events_to_compilations " +
                 "WHERE compilation_id = ?";
         jdbcTemplate.update(sqlQuery, compilationId);
 
-        for(Integer eventId : events) {
+        for (Integer eventId : events) {
             String sqlSubQuery = "INSERT INTO events_to_compilations (compilation_id, event_id) " +
                     "VALUES (?, ?);";
             jdbcTemplate.update(sqlSubQuery, compilationId, eventId);
@@ -117,12 +118,12 @@ public class CompilationDatabase {
     }
 
     public CompilationDtoResponse patchCompilation(CompilationDto compilation) {
-        if(compilation.getTitle() != null) {
+        if (compilation.getTitle() != null) {
             String sqlQuery =
                     "UPDATE compilations SET title = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, compilation.getTitle(), compilation.getId());
         }
-        if(compilation.getPinned() != null) {
+        if (compilation.getPinned() != null) {
             String sqlQuery =
                     "UPDATE compilations SET pinned = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, compilation.getPinned(), compilation.getId());

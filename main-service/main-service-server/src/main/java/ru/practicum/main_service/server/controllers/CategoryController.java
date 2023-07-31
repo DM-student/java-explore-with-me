@@ -30,7 +30,7 @@ public class CategoryController {
 
     @GetMapping("/categories/{catId}")
     public CategoryDto get(HttpServletRequest servletRequest,
-                                    @PathVariable int catId) throws StatsHttpClientHitException {
+                           @PathVariable int catId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         return service.getById(catId);
@@ -46,8 +46,8 @@ public class CategoryController {
 
     @PatchMapping("/admin/categories/{catId}")
     public CategoryDto patch(HttpServletRequest servletRequest,
-                              @RequestBody CategoryDto category,
-                              @PathVariable int catId) throws StatsHttpClientHitException {
+                             @RequestBody CategoryDto category,
+                             @PathVariable int catId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         category.setId(catId);
@@ -56,7 +56,7 @@ public class CategoryController {
 
     @DeleteMapping("/admin/categories/{catId}")
     public ResponseEntity<CategoryDto> delete(HttpServletRequest servletRequest,
-                              @PathVariable int catId) throws StatsHttpClientHitException {
+                                              @PathVariable int catId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         return new ResponseEntity<>(service.delete(catId), HttpStatus.NO_CONTENT);

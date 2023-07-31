@@ -41,6 +41,7 @@ public class CategoryDatabase {
         }
         return output.get(0);
     }
+
     public List<CategoryDto> getCategoriesByName(String name) {
         String sqlQuery =
                 "SELECT * FROM categories WHERE name = ?;";
@@ -71,7 +72,7 @@ public class CategoryDatabase {
     }
 
     public CategoryDto patchCategory(CategoryDto category) {
-        if(category.getName() != null) {
+        if (category.getName() != null) {
             String sqlQuery =
                     "UPDATE categories SET name = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, category.getName(), category.getId());

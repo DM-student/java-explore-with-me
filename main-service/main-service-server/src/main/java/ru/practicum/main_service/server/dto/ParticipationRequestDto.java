@@ -20,9 +20,9 @@ public class ParticipationRequestDto {
      * @return Ответ в виде булева значения.
      */
     public boolean isValid() {
-        if(created == null) return false;
-        if(event == null) return false;
-        if(requester == null) return false;
+        if (created == null) return false;
+        if (event == null) return false;
+        if (requester == null) return false;
 
         return isValidSkipNulls();
     }
@@ -37,7 +37,7 @@ public class ParticipationRequestDto {
         DateTimeFormatter formatter = MainServiceDtoConstants.DATE_TIME_FORMATTER;
 
         if (created != null) {
-            if(Helpers.validateDateTimeFormat(created, formatter))  return false;
+            if (Helpers.validateDateTimeFormat(created, formatter)) return false;
         }
         if (event != null) {
             if (event < 0) return false;

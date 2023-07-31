@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.main_service.server.dto.CompilationDtoResponse;
 import ru.practicum.main_service.server.dto.ParticipationRequestDto;
 import ru.practicum.main_service.server.services.RequestsService;
 import ru.practicum.stats.httpclient.StatsHttpClientHitException;
@@ -24,7 +23,7 @@ public class ParticipationRequestController {
 
     @GetMapping("/users/{userId}/requests")
     public List<ParticipationRequestDto> getForUser(HttpServletRequest servletRequest,
-                                             @PathVariable int userId) throws StatsHttpClientHitException {
+                                                    @PathVariable int userId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         return service.getRequests(userId);
@@ -32,7 +31,7 @@ public class ParticipationRequestController {
 
     @PostMapping("/users/{userId}/requests")
     public ResponseEntity<ParticipationRequestDto> post(HttpServletRequest servletRequest,
-                                                       @PathVariable int userId, @RequestParam int eventId) throws StatsHttpClientHitException {
+                                                        @PathVariable int userId, @RequestParam int eventId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         return new ResponseEntity<>(service.createRequest(userId, eventId), HttpStatus.CREATED);
@@ -40,7 +39,7 @@ public class ParticipationRequestController {
 
     @PatchMapping("/users/{userId}/requests/{requestId}/cancel")
     public ParticipationRequestDto cancel(HttpServletRequest servletRequest,
-                                        @PathVariable int userId, @PathVariable int requestId) throws StatsHttpClientHitException {
+                                          @PathVariable int userId, @PathVariable int requestId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         return service.cancelRequest(userId, requestId);

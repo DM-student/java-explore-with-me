@@ -4,10 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.main_service.server.dto.CategoryDto;
 import ru.practicum.main_service.server.dto.CompilationDto;
 import ru.practicum.main_service.server.dto.CompilationDtoResponse;
-import ru.practicum.main_service.server.services.CategoryService;
 import ru.practicum.main_service.server.services.CompilationService;
 import ru.practicum.stats.httpclient.StatsHttpClientHitException;
 
@@ -29,7 +27,7 @@ public class CompilationController {
                                                @RequestParam(defaultValue = "10") int size) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
-        if(pinned != null) {
+        if (pinned != null) {
             return service.getAll(from, size, pinned);
         }
         return service.getAll(from, size);
@@ -37,7 +35,7 @@ public class CompilationController {
 
     @GetMapping("/compilations/{compId}")
     public CompilationDtoResponse get(HttpServletRequest servletRequest,
-                                    @PathVariable int compId) throws StatsHttpClientHitException {
+                                      @PathVariable int compId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         return service.getById(compId);
@@ -53,8 +51,8 @@ public class CompilationController {
 
     @PatchMapping("/admin/compilations/{compId}")
     public CompilationDtoResponse patch(HttpServletRequest servletRequest,
-                              @RequestBody CompilationDto compilationDto,
-                              @PathVariable int compId) throws StatsHttpClientHitException {
+                                        @RequestBody CompilationDto compilationDto,
+                                        @PathVariable int compId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         compilationDto.setId(compId);
@@ -63,7 +61,7 @@ public class CompilationController {
 
     @DeleteMapping("/admin/compilations/{compId}")
     public ResponseEntity<CompilationDtoResponse> delete(HttpServletRequest servletRequest,
-                                 @PathVariable int compId) throws StatsHttpClientHitException {
+                                                         @PathVariable int compId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         return new ResponseEntity<>(service.delete(compId), HttpStatus.NO_CONTENT);

@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @Service
 public class EventService {
     private static final DateTimeFormatter formatter = MainServiceDtoConstants.DATE_TIME_FORMATTER;
+
     public enum Sort {
         EVENT_DATE,
         VIEWS
@@ -36,7 +37,7 @@ public class EventService {
 
     public EventDtoResponse getByIdPublished(int id, String ip) {
         EventDtoResponse event = database.getEvent(id);
-        if(!Objects.equals(event.getState(), "PUBLISHED")) {
+        if (!Objects.equals(event.getState(), "PUBLISHED")) {
             throw new NotFoundError("Событие не найдено среди опубликованных.");
         }
         database.incrementViews(id, ip);
@@ -45,7 +46,7 @@ public class EventService {
 
     public EventDtoResponse getByIdForUser(int eventId, int userId, String ip) {
         EventDtoResponse event = database.getEvent(eventId);
-        if(event.getInitiator().getId() != userId) {
+        if (event.getInitiator().getId() != userId) {
             throw new BadRequestError("В событиях пользователя не найдено запрошенное.");
         }
         database.incrementViews(eventId, ip);
@@ -62,18 +63,19 @@ public class EventService {
         }
         return database.createEvent(eventToPost);
     }
+
     public EventDtoResponse patchEventUser(EventDto eventToPost) {
         EventDtoResponse event = database.getEvent(eventToPost.getId());
         if (event.getState().equals("PUBLISHED")) {
             throw new ConflictError("Несанкционированная попытка изменить опубликованное событие.", eventToPost);
         }
 
-        if(eventToPost.getInitiator() != event.getInitiator().getId()) {
+        if (eventToPost.getInitiator() != event.getInitiator().getId()) {
             throw new BadRequestError("Вы не являетесь владельцем события.");
         }
 
-        if(eventToPost.getStateAction() != null) {
-            if (!(eventToPost.getStateAction().equals("SEND_TO_REVIEW") || eventToPost.getStateAction().equals("CANCEL_REVIEW")))  {
+        if (eventToPost.getStateAction() != null) {
+            if (!(eventToPost.getStateAction().equals("SEND_TO_REVIEW") || eventToPost.getStateAction().equals("CANCEL_REVIEW"))) {
                 throw new ConflictError("Несанкционированная попытка изменить состояние события.", eventToPost);
             }
         }
@@ -84,16 +86,16 @@ public class EventService {
     public EventDtoResponse patchEvent(EventDto eventToPost) {
         eventToPost.setState(null); // Так как состояние меняется через stateAction.
         EventDtoResponse oldEvent = database.getEvent(eventToPost.getId());
-        if(eventToPost.getStateAction() != null) {
+        if (eventToPost.getStateAction() != null) {
             if (eventToPost.getStateAction().equals("PUBLISH_EVENT")) {
-                if(!oldEvent.getState().equals("PENDING")) {
+                if (!oldEvent.getState().equals("PENDING")) {
                     throw new ConflictError("Не возможна публикация данного события в его текущем состоянии.", eventToPost);
                 }
                 eventToPost.setPublishedOn(formatter.format(LocalDateTime.now()));
                 eventToPost.setState("PUBLISHED");
             }
             if (eventToPost.getStateAction().equals("REJECT_EVENT")) {
-                if(oldEvent.getState().equals("PUBLISHED")) {
+                if (oldEvent.getState().equals("PUBLISHED")) {
                     throw new ConflictError("Не возможна отмена уже опубликованного события.", eventToPost);
                 }
                 eventToPost.setState("CANCELED");
@@ -102,7 +104,7 @@ public class EventService {
                 eventToPost.setState("PENDING");
             }
             if (eventToPost.getStateAction().equals("CANCEL_REVIEW")) {
-                if(oldEvent.getState().equals("PUBLISHED")) {
+                if (oldEvent.getState().equals("PUBLISHED")) {
                     throw new ConflictError("Не возможна отмена уже опубликованного события.", eventToPost);
                 }
                 eventToPost.setState("CANCELED");
@@ -122,8 +124,8 @@ public class EventService {
 
 
     public List<EventDtoResponse> getAll(String text, Boolean paid, List<Integer> categories,
-                                              String rangeStart, String rangeEnd, boolean onlyAvailable,
-                                              Sort sort, int from, int size) {
+                                         String rangeStart, String rangeEnd, boolean onlyAvailable,
+                                         Sort sort, int from, int size) {
         // Валидация данных.
 
         if (rangeStart != null && rangeEnd != null) {
@@ -137,7 +139,7 @@ public class EventService {
         StringBuilder query = new StringBuilder();
         boolean shouldAddAnd = false;
 
-        if(text != null) {
+        if (text != null) {
             query.append("(");
             query.append("annotation LIKE '%");
             query.append(text);
@@ -152,7 +154,7 @@ public class EventService {
             shouldAddAnd = true;
         }
 
-        if(paid != null) {
+        if (paid != null) {
             if (shouldAddAnd) {
                 query.append("AND ");
             }
@@ -165,14 +167,14 @@ public class EventService {
         }
 
         // Категории
-        if(categories != null && !categories.isEmpty()) {
+        if (categories != null && !categories.isEmpty()) {
             if (shouldAddAnd) {
                 query.append("AND ");
             }
 
             query.append("(");
             for (int i = 0; i < categories.size(); i++) {
-                if(i > 0) {
+                if (i > 0) {
                     query.append("OR ");
                 }
                 query.append("category_id = ");
@@ -218,7 +220,7 @@ public class EventService {
         }
 
         List<EventDtoResponse> output = database.getEvents(from, size, query.toString());
-        if(onlyAvailable) {
+        if (onlyAvailable) {
             return output.stream().filter(event -> event.getConfirmedRequests() < event.getParticipantLimit())
                     .collect(Collectors.toList());
         }
@@ -226,8 +228,8 @@ public class EventService {
     }
 
     public List<EventDtoResponse> getAllAdmin(List<Integer> users, List<String> states, List<Integer> categories,
-                                         String rangeStart, String rangeEnd,
-                                         int from, int size) {
+                                              String rangeStart, String rangeEnd,
+                                              int from, int size) {
         // Валидация данных.
 
         if (rangeStart != null && rangeEnd != null) {
@@ -243,10 +245,10 @@ public class EventService {
 
         // Юзеры
 
-        if(users != null && !users.isEmpty()) {
+        if (users != null && !users.isEmpty()) {
             query.append("(");
             for (int i = 0; i < users.size(); i++) {
-                if(i > 0) {
+                if (i > 0) {
                     query.append("OR ");
                 }
                 query.append("initiator_id = ");
@@ -259,14 +261,14 @@ public class EventService {
 
         // Состояния
 
-        if(states != null && !states.isEmpty()) {
+        if (states != null && !states.isEmpty()) {
             if (shouldAddAnd) {
                 query.append("AND ");
             }
 
             query.append("(");
             for (int i = 0; i < states.size(); i++) {
-                if(i > 0) {
+                if (i > 0) {
                     query.append("OR ");
                 }
                 query.append("state = '"); // Конечно есть опасность инъекции,
@@ -278,14 +280,14 @@ public class EventService {
         }
 
         // Категории
-        if(categories != null && !categories.isEmpty()) {
+        if (categories != null && !categories.isEmpty()) {
             if (shouldAddAnd) {
                 query.append("AND ");
             }
 
             query.append("(");
             for (int i = 0; i < categories.size(); i++) {
-                if(i > 0) {
+                if (i > 0) {
                     query.append("OR ");
                 }
                 query.append("category_id = ");

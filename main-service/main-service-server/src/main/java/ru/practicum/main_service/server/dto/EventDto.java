@@ -61,9 +61,9 @@ public class EventDto {
         DateTimeFormatter formatter = MainServiceDtoConstants.DATE_TIME_FORMATTER;
 
         if (annotation != null) {
-            if(annotation.isBlank()) return false;
-            if(annotation.length() < 20) return false;
-            if(annotation.length() > 2000) return false;
+            if (annotation.isBlank()) return false;
+            if (annotation.length() < 20) return false;
+            if (annotation.length() > 2000) return false;
         }
         if (category != null) {
             if (category < 0) return false;
@@ -72,9 +72,9 @@ public class EventDto {
             if (!Helpers.validateDateTimeFormat(createdOn, formatter)) return false;
         }
         if (description != null) {
-            if(description.isBlank()) return false;
-            if(description.length() < 20) return false;
-            if(description.length() > 7000) return false;
+            if (description.isBlank()) return false;
+            if (description.length() < 20) return false;
+            if (description.length() > 7000) return false;
         }
         if (eventDate != null) {
             if (!Helpers.validateDateTimeFormat(eventDate, formatter)) return false;
@@ -90,9 +90,9 @@ public class EventDto {
             if (participantLimit < 0) return false;
         }
         if (title != null) {
-            if(title.isBlank()) return false;
-            if(title.length() < 3) return false;
-            if(title.length() > 120) return false;
+            if (title.isBlank()) return false;
+            if (title.length() < 3) return false;
+            if (title.length() > 120) return false;
         }
         return true;
     }

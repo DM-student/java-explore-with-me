@@ -18,6 +18,7 @@ public class CompilationService {
     public List<CompilationDtoResponse> getAll(int from, int size) {
         return database.getAllCompilations(from, size);
     }
+
     public List<CompilationDtoResponse> getAll(int from, int limit, boolean pinned) {
         return database.getAllCompilations(from, limit, pinned);
     }
@@ -25,6 +26,7 @@ public class CompilationService {
     public CompilationDtoResponse getById(int id) {
         return database.getCompilation(id);
     }
+
     public CompilationDtoResponse delete(int id) {
         CompilationDtoResponse deletedCompilation = getById(id);
         database.deleteCompilation(id);
@@ -32,7 +34,7 @@ public class CompilationService {
     }
 
     public CompilationDtoResponse post(CompilationDto compilation) {
-        if(compilation.getPinned() == null) {
+        if (compilation.getPinned() == null) {
             compilation.setPinned(false);
         }
         if (!compilation.isValid()) {

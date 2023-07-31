@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.practicum.main_service.server.dto.*;
+import ru.practicum.main_service.server.dto.EventDto;
+import ru.practicum.main_service.server.dto.EventDtoResponse;
+import ru.practicum.main_service.server.dto.LocationDto;
+import ru.practicum.main_service.server.dto.MainServiceDtoConstants;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
 import java.sql.Timestamp;
@@ -58,7 +61,7 @@ public class EventDatabase {
             event.setPaid(rs.getBoolean("paid"));
             event.setParticipantLimit(rs.getInt("participant_limit"));
 
-            if(rs.getObject("published_date") != null) {
+            if (rs.getObject("published_date") != null) {
                 event.setPublishedOn(formatter.format(rs.getTimestamp("published_date").toLocalDateTime()));
             }
 
@@ -90,8 +93,9 @@ public class EventDatabase {
 
         return mapEvents(rs);
     }
+
     public List<EventDtoResponse> getEvents(int from, int size, String query) {
-        if(query == null || query.isBlank()) {
+        if (query == null || query.isBlank()) {
             return getEvents(from, size);
         }
 
@@ -155,60 +159,60 @@ public class EventDatabase {
     }
 
     public EventDtoResponse updateEvent(EventDto event) {
-        if(event.getAnnotation() != null) {
+        if (event.getAnnotation() != null) {
             String sqlQuery =
                     "UPDATE events SET annotation = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getAnnotation(), event.getId());
         }
-        if(event.getCategory() != null) {
+        if (event.getCategory() != null) {
             String sqlQuery =
                     "UPDATE events SET category_id = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getCategory(), event.getId());
         }
-        if(event.getDescription() != null) {
+        if (event.getDescription() != null) {
             String sqlQuery =
                     "UPDATE events SET description = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getDescription(), event.getId());
         }
-        if(event.getEventDate() != null) {
+        if (event.getEventDate() != null) {
             String sqlQuery =
                     "UPDATE events SET event_date = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery,
                     Timestamp.valueOf(LocalDateTime.parse(event.getEventDate(), formatter)),
                     event.getId());
         }
-        if(event.getLocation() != null) {
+        if (event.getLocation() != null) {
             String sqlQuery =
                     "UPDATE events SET location_lat = ?, location_lon = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getLocation().getLat(), event.getLocation().getLon(), event.getId());
         }
-        if(event.getPaid() != null) {
+        if (event.getPaid() != null) {
             String sqlQuery =
                     "UPDATE events SET paid = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getPaid(), event.getId());
         }
-        if(event.getParticipantLimit() != null) {
+        if (event.getParticipantLimit() != null) {
             String sqlQuery =
                     "UPDATE events SET participant_limit = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getParticipantLimit(), event.getId());
         }
-        if(event.getRequestModeration() != null) {
+        if (event.getRequestModeration() != null) {
             String sqlQuery =
                     "UPDATE events SET request_moderation = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getRequestModeration(), event.getId());
         }
-        if(event.getTitle() != null) {
+        if (event.getTitle() != null) {
             String sqlQuery =
                     "UPDATE events SET title = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getTitle(), event.getId());
         }
 
-        if(event.getState() != null) {
+        if (event.getState() != null) {
             String sqlQuery =
                     "UPDATE events SET state = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getState(), event.getId());
         }
-        if(event.getPublishedOn() != null) {
+        if (event.getPublishedOn() != null) {
             String sqlQuery =
                     "UPDATE events SET published_date = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery,
@@ -222,7 +226,7 @@ public class EventDatabase {
         String ipCheckSqlQuery =
                 "SELECT * FROM views_to_ips WHERE event_id = ? AND ip = ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(ipCheckSqlQuery, eventId, ip);
-        if(rs.next()) {
+        if (rs.next()) {
             return;
         }
         String sqlQuery =

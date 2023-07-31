@@ -43,10 +43,10 @@ public class UserService {
         if (!user.isValid()) {
             throw new BadRequestError("Ошибка валидации входящих данных.", user);
         }
-        if(!userDB.getUsersByName(user.getName()).isEmpty()) {
+        if (!userDB.getUsersByName(user.getName()).isEmpty()) {
             throw new ConflictError("Пользователь с этим именем уже существует.");
         }
-        if(!userDB.getUsersByEmail(user.getEmail()).isEmpty()) {
+        if (!userDB.getUsersByEmail(user.getEmail()).isEmpty()) {
             throw new ConflictError("Пользователь c этой почтой уже существует.");
         }
         return userDB.createUser(user);

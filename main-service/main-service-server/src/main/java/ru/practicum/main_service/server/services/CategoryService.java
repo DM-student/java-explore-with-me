@@ -23,9 +23,10 @@ public class CategoryService {
     public CategoryDto getById(int id) {
         return database.getCategory(id);
     }
+
     public CategoryDto delete(int id) {
         CategoryDto deletedCategory = getById(id);
-        if(!eventService.getAllAdmin(null, null,
+        if (!eventService.getAllAdmin(null, null,
                 List.of(id),
                 null, null, 0, 100).isEmpty()) {
             throw new ConflictError("К категории уже привязаны события.");

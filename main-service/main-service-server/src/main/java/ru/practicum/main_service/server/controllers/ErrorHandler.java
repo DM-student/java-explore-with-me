@@ -20,7 +20,7 @@ public class ErrorHandler {
     public ResponseEntity<Map<String, Object>> getResponseEntity(Throwable e) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
-        if(e.getClass() == MissingServletRequestParameterException.class) {
+        if (e.getClass() == MissingServletRequestParameterException.class) {
             status = HttpStatus.BAD_REQUEST;
         } else if (e.getClass() == BadRequestError.class) {
             status = HttpStatus.BAD_REQUEST;
@@ -33,7 +33,7 @@ public class ErrorHandler {
         Map<String, Object> response = new HashMap<>();
         response.put("error", e.getMessage());
         response.put("error_class", e.getClass().getSimpleName());
-        if(e instanceof BaseError) {
+        if (e instanceof BaseError) {
             BaseError error = (BaseError) e;
             if (error.getData() != null) {
                 JSONObject jsonData = new JSONObject(error);

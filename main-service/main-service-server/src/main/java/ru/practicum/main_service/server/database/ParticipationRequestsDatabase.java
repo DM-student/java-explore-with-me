@@ -1,13 +1,11 @@
 package ru.practicum.main_service.server.database;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.practicum.main_service.server.dto.MainServiceDtoConstants;
 import ru.practicum.main_service.server.dto.ParticipationRequestDto;
-import ru.practicum.main_service.server.dto.UserDto;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
 import java.sql.Timestamp;

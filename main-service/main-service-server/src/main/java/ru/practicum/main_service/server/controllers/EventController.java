@@ -2,14 +2,11 @@ package ru.practicum.main_service.server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.main_service.server.dto.CompilationDtoResponse;
 import ru.practicum.main_service.server.dto.EventDto;
 import ru.practicum.main_service.server.dto.EventDtoResponse;
 import ru.practicum.main_service.server.services.EventService;
-import ru.practicum.main_service.server.utility.errors.BadRequestError;
 import ru.practicum.stats.httpclient.StatsHttpClientHitException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,9 +23,9 @@ public class EventController {
 
     @GetMapping("/users/{userId}/events")
     public List<EventDtoResponse> getAllForUser(HttpServletRequest servletRequest,
-                                         @PathVariable int userId,
-                                         @RequestParam(defaultValue = "0") int from,
-                                         @RequestParam(defaultValue = "10") int size) throws StatsHttpClientHitException {
+                                                @PathVariable int userId,
+                                                @RequestParam(defaultValue = "0") int from,
+                                                @RequestParam(defaultValue = "10") int size) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         return service.getAllForUser(userId, from, size);
@@ -55,8 +52,8 @@ public class EventController {
 
     @PatchMapping("/users/{userId}/events/{eventId}")
     public EventDtoResponse patch(HttpServletRequest servletRequest,
-                                 @PathVariable int userId, @PathVariable int eventId,
-                                 @RequestBody EventDto event) throws StatsHttpClientHitException {
+                                  @PathVariable int userId, @PathVariable int eventId,
+                                  @RequestBody EventDto event) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         event.setInitiator(userId);
@@ -68,8 +65,8 @@ public class EventController {
 
     @PatchMapping("/admin/events/{eventId}")
     public EventDtoResponse adminPatch(HttpServletRequest servletRequest,
-                                  @PathVariable int eventId,
-                                  @RequestBody EventDto event) throws StatsHttpClientHitException {
+                                       @PathVariable int eventId,
+                                       @RequestBody EventDto event) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         event.setId(eventId);
@@ -78,13 +75,13 @@ public class EventController {
 
     @GetMapping("/admin/events")
     public List<EventDtoResponse> getAllAdmin(HttpServletRequest servletRequest,
-                                         @RequestParam(required = false) List<Integer> users,
-                                         @RequestParam(required = false) List<String> states,
-                                         @RequestParam(required = false) List<Integer> categories,
-                                         @RequestParam(required = false) String rangeStart,
-                                         @RequestParam(required = false) String rangeEnd,
-                                         @RequestParam(defaultValue = "0") int from,
-                                         @RequestParam(defaultValue = "10") int size) throws StatsHttpClientHitException {
+                                              @RequestParam(required = false) List<Integer> users,
+                                              @RequestParam(required = false) List<String> states,
+                                              @RequestParam(required = false) List<Integer> categories,
+                                              @RequestParam(required = false) String rangeStart,
+                                              @RequestParam(required = false) String rangeEnd,
+                                              @RequestParam(defaultValue = "0") int from,
+                                              @RequestParam(defaultValue = "10") int size) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
         return service.getAllAdmin(users, states, categories, rangeStart, rangeEnd, from, size);

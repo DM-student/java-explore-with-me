@@ -14,7 +14,6 @@ import ru.practicum.main_service.server.utility.errors.ConflictError;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +38,7 @@ public class RequestsService {
         if (userId == event.getInitiator().getId()) {
             throw new ConflictError("Заявку на участие нельзя заполнить на своё событие.");
         }
-        if(database.hasRequestFromUser(eventId, userId)) {
+        if (database.hasRequestFromUser(eventId, userId)) {
             throw new ConflictError("Уже есть заявка от данного пользователя.");
         }
         ParticipationRequestDto request = new ParticipationRequestDto();
@@ -47,14 +46,15 @@ public class RequestsService {
         request.setEvent(eventId);
         request.setCreated(formatter.format(LocalDateTime.now()));
 
-        if(event.getParticipantLimit() == 0) { // Исходя из постман-тестов - в этом случае премодерация игнорируется.
+        if (event.getParticipantLimit() == 0) { // Исходя из постман-тестов - в этом случае премодерация игнорируется.
             request.setStatus("CONFIRMED");
             return database.createRequest(request);
-        } if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
+        }
+        if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
             throw new ConflictError("Лимит заявок уже достигнут.");
         }
 
-        if(event.getRequestModeration()) {
+        if (event.getRequestModeration()) {
             request.setStatus("PENDING");
         } else {
             request.setStatus("CONFIRMED");
@@ -65,23 +65,23 @@ public class RequestsService {
     public Map<String, List<ParticipationRequestDto>> handleRequestsUpdate(int userId, int eventId, JSONObject json) {
         EventDtoResponse event = eventDatabase.getEvent(eventId);
 
-        if(event.getInitiator().getId() != userId) {
+        if (event.getInitiator().getId() != userId) {
             throw new BadRequestError("В событиях пользователя не найдено запрошенное.");
         }
 
         int[] ids = json.getJSONArray("requestIds").toList().stream().mapToInt(x -> (Integer) x).toArray();
         String status = json.getString("status");
 
-        if(status.equals("CONFIRMED") && event.getConfirmedRequests() + ids.length > event.getParticipantLimit()) {
+        if (status.equals("CONFIRMED") && event.getConfirmedRequests() + ids.length > event.getParticipantLimit()) {
             throw new ConflictError("Если вы одобрите эти заявки - они превысят лимит.");
         }
 
-        for(int id : ids) {
+        for (int id : ids) {
             ParticipationRequestDto request = database.getRequest(id);
-            if(request.getStatus().equals("CONFIRMED") && status.equals("REJECTED")) {
+            if (request.getStatus().equals("CONFIRMED") && status.equals("REJECTED")) {
                 throw new ConflictError("Нельзя отменить уже одобренную заявку.");
             }
-            if(database.updateRequestStatus(id, status).getEvent() != eventId) {
+            if (database.updateRequestStatus(id, status).getEvent() != eventId) {
                 throw new BadRequestError("Одна из заявок указанных в запросе не принадлежит нужному событию.");
             }
         }
@@ -93,7 +93,7 @@ public class RequestsService {
     }
 
     public ParticipationRequestDto cancelRequest(int userId, int requestId) {
-        if(database.getRequest(requestId).getRequester() != userId) {
+        if (database.getRequest(requestId).getRequester() != userId) {
             throw new ConflictError("Заявка не принадлежит указанному пользователю.");
         }
         return database.updateRequestStatus(requestId, "CANCELED");
@@ -107,7 +107,7 @@ public class RequestsService {
     public List<ParticipationRequestDto> getRequestsForEvent(int userId, int eventId) {
         EventDtoResponse event = eventDatabase.getEvent(eventId);
 
-        if(event.getInitiator().getId() != userId) {
+        if (event.getInitiator().getId() != userId) {
             throw new BadRequestError("В событиях пользователя не найдено запрошенное.");
         }
 

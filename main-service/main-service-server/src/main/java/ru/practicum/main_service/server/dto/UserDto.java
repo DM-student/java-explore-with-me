@@ -19,8 +19,8 @@ public class UserDto {
      * @return Ответ в виде булева значения.
      */
     public boolean isValid() {
-        if(name == null) return false;
-        if(email == null) return false;
+        if (name == null) return false;
+        if (email == null) return false;
 
         return isValidSkipNulls();
     }
