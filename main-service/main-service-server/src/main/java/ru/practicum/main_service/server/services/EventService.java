@@ -8,6 +8,7 @@ import ru.practicum.main_service.server.dto.EventDto;
 import ru.practicum.main_service.server.dto.EventDtoResponse;
 import ru.practicum.main_service.server.dto.MainServiceDtoConstants;
 import ru.practicum.main_service.server.utility.errors.BadRequestError;
+import ru.practicum.main_service.server.utility.errors.ConflictError;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
 import java.time.LocalDateTime;
@@ -88,6 +89,11 @@ public class EventService {
         if (!eventToPost.isValidSkipNulls()) {
             throw new BadRequestError("Ошибка объекта.", eventToPost);
         }
+
+        EventDtoResponse oldEvent = database.getEvent(eventToPost.getId());
+        if(!(oldEvent.getState().equals("PENDING") || eventToPost.getState().equals("PENDING"))) {
+            throw new ConflictError("Ошибка состояния события.");
+        }
         return database.updateEvent(eventToPost);
     }
 
@@ -128,12 +134,11 @@ public class EventService {
             shouldAddAnd = true;
         }
 
-        if (shouldAddAnd) {
-            query.append("AND ");
-            shouldAddAnd = false;
-        }
-
         if(paid != null) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
             query.append("paid = ");
             query.append(paid);
             query.append(" ");
@@ -141,13 +146,12 @@ public class EventService {
             shouldAddAnd = true;
         }
 
-        if (shouldAddAnd) {
-            query.append("AND ");
-            shouldAddAnd = false;
-        }
-
         // Категории
         if(categories != null && !categories.isEmpty()) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
             query.append("(");
             for (int i = 0; i < categories.size(); i++) {
                 if(i > 0) {
@@ -161,25 +165,23 @@ public class EventService {
             shouldAddAnd = true;
         }
 
-        if (shouldAddAnd) {
-            query.append("AND ");
-            shouldAddAnd = false;
-        }
-
         // Даты...
         if (rangeStart != null) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
             query.append("event_date >= '");
             query.append(rangeStart);
             query.append("' ");
             shouldAddAnd = true;
         }
 
-        if (shouldAddAnd) {
-            query.append("AND ");
-            shouldAddAnd = false;
-        }
-
         if (rangeEnd != null) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
             query.append("event_date < '");
             query.append(rangeEnd);
             query.append("' ");
@@ -188,7 +190,6 @@ public class EventService {
 
         if (shouldAddAnd) {
             query.append("AND ");
-            shouldAddAnd = false;
         }
 
         query.append("state = 'PUBLISHED' ");
@@ -238,14 +239,13 @@ public class EventService {
             shouldAddAnd = true;
         }
 
-        if (shouldAddAnd) {
-            query.append("AND ");
-            shouldAddAnd = false;
-        }
-
         // Состояния
 
         if(states != null && !states.isEmpty()) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
             query.append("(");
             for (int i = 0; i < states.size(); i++) {
                 if(i > 0) {
@@ -259,13 +259,12 @@ public class EventService {
             shouldAddAnd = true;
         }
 
-        if (shouldAddAnd) {
-            query.append("AND ");
-            shouldAddAnd = false;
-        }
-
         // Категории
         if(categories != null && !categories.isEmpty()) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
             query.append("(");
             for (int i = 0; i < categories.size(); i++) {
                 if(i > 0) {
@@ -279,25 +278,23 @@ public class EventService {
             shouldAddAnd = true;
         }
 
-        if (shouldAddAnd) {
-            query.append("AND ");
-            shouldAddAnd = false;
-        }
-
         // Даты
         if (rangeStart != null) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
             query.append("event_date >= '");
             query.append(rangeStart);
             query.append("' ");
             shouldAddAnd = true;
         }
 
-        if (shouldAddAnd) {
-            query.append("AND ");
-            shouldAddAnd = false;
-        }
-
         if (rangeEnd != null) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
             query.append("event_date <= '");
             query.append(rangeEnd);
             query.append("' ");

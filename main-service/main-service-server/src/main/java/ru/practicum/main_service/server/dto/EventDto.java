@@ -3,6 +3,7 @@ package ru.practicum.main_service.server.dto;
 import lombok.Data;
 import ru.practicum.main_service.server.utility.Helpers;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Data
@@ -27,6 +28,7 @@ public class EventDto {
     public void setDefaultValues() {
         if (participantLimit == null) participantLimit = 0;
         if (requestModeration == null) requestModeration = true;
+        if (paid == null) paid = false;
     }
 
     /**
@@ -60,6 +62,8 @@ public class EventDto {
 
         if (annotation != null) {
             if(annotation.isBlank()) return false;
+            if(annotation.length() < 20) return false;
+            if(annotation.length() > 2000) return false;
         }
         if (category != null) {
             if (category < 0) return false;
@@ -69,9 +73,12 @@ public class EventDto {
         }
         if (description != null) {
             if(description.isBlank()) return false;
+            if(description.length() < 20) return false;
+            if(description.length() > 7000) return false;
         }
         if (eventDate != null) {
             if (!Helpers.validateDateTimeFormat(eventDate, formatter)) return false;
+            if (LocalDateTime.parse(eventDate, formatter).isBefore(LocalDateTime.now())) return false;
         }
         if (initiator != null) {
             if (initiator < 0) return false;
@@ -84,6 +91,8 @@ public class EventDto {
         }
         if (title != null) {
             if(title.isBlank()) return false;
+            if(title.length() < 3) return false;
+            if(title.length() > 120) return false;
         }
         return true;
     }

@@ -1,6 +1,7 @@
 package ru.practicum.main_service.server.dto;
 
 import lombok.Data;
+import ru.practicum.main_service.server.utility.Helpers;
 
 
 // В некоторых случаях я не создавал "краткую" версию ДТОшки. Краткие ДТОшки у меня только для ситуаций,
@@ -33,12 +34,12 @@ public class UserDto {
     public boolean isValidSkipNulls() {
         if (name != null) {
             if (name.isBlank()) return false;
-            if (name.length() > 64) return false;
+            if (name.length() > 250) return false;
+            if (name.length() < 2) return false;
         }
 
         if (email != null) {
-            if (email.isBlank()) return false;
-            if (email.length() > 256) return false;
+            if (!Helpers.validateEmail(email)) return false;
         }
 
         return true;

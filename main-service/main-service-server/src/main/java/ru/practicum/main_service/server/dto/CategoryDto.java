@@ -16,7 +16,8 @@ public class CategoryDto {
     public boolean isValid() {
         if (name == null) return false;
         if (name.isBlank()) return false;
-        if (name.length() > 64) return false;
+        if (name.length() > 50) return false;
+        if (name.length() < 2) return false;
 
         return true;
     }

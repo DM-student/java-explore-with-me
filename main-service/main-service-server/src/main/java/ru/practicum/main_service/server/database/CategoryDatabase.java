@@ -42,6 +42,13 @@ public class CategoryDatabase {
         }
         return output.get(0);
     }
+    public boolean isCategoryNameOccupied(String name) {
+        String sqlQuery =
+                "SELECT * FROM categories WHERE name = ?;";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, name);
+        List<CategoryDto> output = mapCategories(rs);
+        return !output.isEmpty();
+    }
 
     public List<CategoryDto> getAllCategories(int from, int limit) {
         String sqlQuery =

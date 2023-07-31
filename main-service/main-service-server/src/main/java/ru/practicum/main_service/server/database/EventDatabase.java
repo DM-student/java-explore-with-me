@@ -91,6 +91,10 @@ public class EventDatabase {
         return mapEvents(rs);
     }
     public List<EventDtoResponse> getEvents(int from, int size, String query) {
+        if(query == null || query.isBlank()) {
+            return getEvents(from, size);
+        }
+
         String sqlQuery =
                 "SELECT * FROM events WHERE " + query + " LIMIT ? OFFSET ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, size, from);
@@ -158,7 +162,7 @@ public class EventDatabase {
         }
         if(event.getCategory() != null) {
             String sqlQuery =
-                    "UPDATE events SET category = ? WHERE id = ?;";
+                    "UPDATE events SET category_id = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, event.getCategory(), event.getId());
         }
         if(event.getDescription() != null) {
@@ -169,7 +173,9 @@ public class EventDatabase {
         if(event.getEventDate() != null) {
             String sqlQuery =
                     "UPDATE events SET event_date = ? WHERE id = ?;";
-            jdbcTemplate.update(sqlQuery, event.getEventDate(), event.getId());
+            jdbcTemplate.update(sqlQuery,
+                    Timestamp.valueOf(LocalDateTime.parse(event.getEventDate(), formatter)),
+                    event.getId());
         }
         if(event.getLocation() != null) {
             String sqlQuery =

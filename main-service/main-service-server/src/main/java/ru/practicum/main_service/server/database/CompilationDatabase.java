@@ -60,6 +60,14 @@ public class CompilationDatabase {
         return output.get(0);
     }
 
+    public boolean IsTitleOccupied(String title) {
+        String sqlQuery =
+                "SELECT * FROM compilations WHERE title = ?;";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, title);
+        List<CompilationDtoResponse> output = mapCompilations(rs);
+        return !output.isEmpty();
+    }
+
     public List<CompilationDtoResponse> getAllCompilations(int from, int size) {
         String sqlQuery =
                 "SELECT * FROM compilations LIMIT ? OFFSET ?;";

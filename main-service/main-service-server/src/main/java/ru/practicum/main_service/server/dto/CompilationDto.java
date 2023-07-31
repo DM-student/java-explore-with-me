@@ -1,6 +1,7 @@
 package ru.practicum.main_service.server.dto;
 
 import lombok.Data;
+import ru.practicum.main_service.server.utility.Helpers;
 
 import java.util.List;
 
@@ -18,8 +19,27 @@ public class CompilationDto {
      * @return Ответ в виде булева значения.
      */
     public boolean isValid() {
-        if (title == null) return false;
-        if (pinned == null) return false;
+        if(title == null) return false;
+        if(pinned == null) return false;
+
+        return isValidSkipNulls();
+    }
+
+    /**
+     * Служит для валидации объекта, но игнорирует отсутствующие переменные.
+     * Не проверяет ничего на стороне БД!
+     *
+     * @return Ответ в виде булева значения.
+     */
+    public boolean isValidSkipNulls() {
+        if (title != null) {
+            if (title.isBlank()) return false;
+            if (title.length() > 50) return false;
+            if (title.length() < 2) return false;
+        }
+
         return true;
     }
+
+
 }

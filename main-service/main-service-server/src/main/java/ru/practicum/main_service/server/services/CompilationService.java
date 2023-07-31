@@ -8,6 +8,7 @@ import ru.practicum.main_service.server.dto.CategoryDto;
 import ru.practicum.main_service.server.dto.CompilationDto;
 import ru.practicum.main_service.server.dto.CompilationDtoResponse;
 import ru.practicum.main_service.server.utility.errors.BadRequestError;
+import ru.practicum.main_service.server.utility.errors.ConflictError;
 
 import java.util.List;
 
@@ -33,15 +34,24 @@ public class CompilationService {
     }
 
     public CompilationDtoResponse post(CompilationDto compilation) {
+        if(compilation.getPinned() == null) {
+            compilation.setPinned(false);
+        }
         if (!compilation.isValid()) {
             throw new BadRequestError("Ошибка объекта.", compilation);
+        }
+        if (database.IsTitleOccupied(compilation.getTitle())) {
+            throw new ConflictError("Название подборки уже занято.", compilation);
         }
         return database.createCompilation(compilation);
     }
 
     public CompilationDtoResponse update(CompilationDto compilation) {
-        if (!compilation.isValid()) {
+        if (!compilation.isValidSkipNulls()) {
             throw new BadRequestError("Ошибка объекта.", compilation);
+        }
+        if (database.IsTitleOccupied(compilation.getTitle())) {
+            throw new ConflictError("Название подборки уже занято.", compilation);
         }
         return database.patchCompilation(compilation);
     }
