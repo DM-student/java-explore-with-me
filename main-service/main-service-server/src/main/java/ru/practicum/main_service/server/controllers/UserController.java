@@ -53,6 +53,6 @@ public class UserController {
         earlyRequestHandler.handle(servletRequest);
 
         UserDto user = userService.deleteUser(userId);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.NO_CONTENT);
     }
 }

@@ -2,9 +2,7 @@ package ru.practicum.main_service.server.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.main_service.server.database.CategoryDatabase;
 import ru.practicum.main_service.server.database.CompilationDatabase;
-import ru.practicum.main_service.server.dto.CategoryDto;
 import ru.practicum.main_service.server.dto.CompilationDto;
 import ru.practicum.main_service.server.dto.CompilationDtoResponse;
 import ru.practicum.main_service.server.utility.errors.BadRequestError;
@@ -40,7 +38,8 @@ public class CompilationService {
         if (!compilation.isValid()) {
             throw new BadRequestError("Ошибка объекта.", compilation);
         }
-        if (database.IsTitleOccupied(compilation.getTitle())) {
+        List<CompilationDtoResponse> similarCompilations = database.getByTitle(compilation.getTitle());
+        if (!similarCompilations.isEmpty() && similarCompilations.get(0).getId() != compilation.getId()) {
             throw new ConflictError("Название подборки уже занято.", compilation);
         }
         return database.createCompilation(compilation);
@@ -50,7 +49,8 @@ public class CompilationService {
         if (!compilation.isValidSkipNulls()) {
             throw new BadRequestError("Ошибка объекта.", compilation);
         }
-        if (database.IsTitleOccupied(compilation.getTitle())) {
+        List<CompilationDtoResponse> similarCompilations = database.getByTitle(compilation.getTitle());
+        if (!similarCompilations.isEmpty() && similarCompilations.get(0).getId() != compilation.getId()) {
             throw new ConflictError("Название подборки уже занято.", compilation);
         }
         return database.patchCompilation(compilation);

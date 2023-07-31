@@ -60,12 +60,12 @@ public class CompilationDatabase {
         return output.get(0);
     }
 
-    public boolean IsTitleOccupied(String title) {
+    public List<CompilationDtoResponse> getByTitle(String title) {
         String sqlQuery =
                 "SELECT * FROM compilations WHERE title = ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, title);
         List<CompilationDtoResponse> output = mapCompilations(rs);
-        return !output.isEmpty();
+        return output;
     }
 
     public List<CompilationDtoResponse> getAllCompilations(int from, int size) {
@@ -93,14 +93,15 @@ public class CompilationDatabase {
     }
 
     private void linkEvents(int compilationId, List<Integer> events) {
+        if(events == null) return;
+
         String sqlQuery = "DELETE FROM events_to_compilations " +
-                "WHERE id = ?";
+                "WHERE compilation_id = ?";
         jdbcTemplate.update(sqlQuery, compilationId);
 
         for(Integer eventId : events) {
             String sqlSubQuery = "INSERT INTO events_to_compilations (compilation_id, event_id) " +
-                    "VALUES (?, ?) " +
-                    "RETURNING *;";
+                    "VALUES (?, ?);";
             jdbcTemplate.update(sqlSubQuery, compilationId, eventId);
         }
     }
@@ -110,7 +111,9 @@ public class CompilationDatabase {
                 "VALUES (?, ?) " +
                 "RETURNING *;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, compilation.getTitle(), compilation.getPinned());
-        return mapCompilations(rs).get(0);
+        int postedId = mapCompilations(rs).get(0).getId();
+        linkEvents(postedId, compilation.getEvents());
+        return getCompilation(postedId);
     }
 
     public CompilationDtoResponse patchCompilation(CompilationDto compilation) {
@@ -124,6 +127,7 @@ public class CompilationDatabase {
                     "UPDATE compilations SET pinned = ? WHERE id = ?;";
             jdbcTemplate.update(sqlQuery, compilation.getPinned(), compilation.getId());
         }
+        linkEvents(compilation.getId(), compilation.getEvents());
         return getCompilation(compilation.getId());
     }
 }

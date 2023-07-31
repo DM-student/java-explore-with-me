@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.practicum.main_service.server.dto.CategoryDto;
-import ru.practicum.main_service.server.dto.UserDto;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
 import java.util.ArrayList;
@@ -42,12 +41,11 @@ public class CategoryDatabase {
         }
         return output.get(0);
     }
-    public boolean isCategoryNameOccupied(String name) {
+    public List<CategoryDto> getCategoriesByName(String name) {
         String sqlQuery =
                 "SELECT * FROM categories WHERE name = ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, name);
-        List<CategoryDto> output = mapCategories(rs);
-        return !output.isEmpty();
+        return mapCategories(rs);
     }
 
     public List<CategoryDto> getAllCategories(int from, int limit) {

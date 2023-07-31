@@ -51,6 +51,22 @@ public class UserDatabase {
         return mapUsers(rs);
     }
 
+    public List<UserDto> getUsersByName(String name) {
+        String sqlQuery = "SELECT * " +
+                "FROM users " +
+                "WHERE name = ?;";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, name);
+        return mapUsers(rs);
+    }
+
+    public List<UserDto> getUsersByEmail(String email) {
+        String sqlQuery = "SELECT * " +
+                "FROM users " +
+                "WHERE email = ?;";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, email);
+        return mapUsers(rs);
+    }
+
     public void deleteUser(int id) {
         String sqlQuery = "DELETE FROM users " +
                 "WHERE id = ?";

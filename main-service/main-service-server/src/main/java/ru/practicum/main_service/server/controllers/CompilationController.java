@@ -37,10 +37,10 @@ public class CompilationController {
 
     @GetMapping("/compilations/{compId}")
     public CompilationDtoResponse get(HttpServletRequest servletRequest,
-                                    @PathVariable int catId) throws StatsHttpClientHitException {
+                                    @PathVariable int compId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
-        return service.getById(catId);
+        return service.getById(compId);
     }
 
     @PostMapping("/admin/compilations")
@@ -62,10 +62,10 @@ public class CompilationController {
     }
 
     @DeleteMapping("/admin/compilations/{compId}")
-    public CompilationDtoResponse delete(HttpServletRequest servletRequest,
+    public ResponseEntity<CompilationDtoResponse> delete(HttpServletRequest servletRequest,
                                  @PathVariable int compId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
-        return service.delete(compId);
+        return new ResponseEntity<>(service.delete(compId), HttpStatus.NO_CONTENT);
     }
 }

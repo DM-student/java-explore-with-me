@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.practicum.main_service.server.database.UserDatabase;
 import ru.practicum.main_service.server.dto.UserDto;
 import ru.practicum.main_service.server.utility.errors.BadRequestError;
+import ru.practicum.main_service.server.utility.errors.ConflictError;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
 import java.util.ArrayList;
@@ -41,6 +42,12 @@ public class UserService {
     public UserDto createUser(UserDto user) {
         if (!user.isValid()) {
             throw new BadRequestError("Ошибка валидации входящих данных.", user);
+        }
+        if(!userDB.getUsersByName(user.getName()).isEmpty()) {
+            throw new ConflictError("Пользователь с этим именем уже существует.");
+        }
+        if(!userDB.getUsersByEmail(user.getEmail()).isEmpty()) {
+            throw new ConflictError("Пользователь c этой почтой уже существует.");
         }
         return userDB.createUser(user);
     }

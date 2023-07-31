@@ -25,12 +25,12 @@ public class CategoryService {
     }
     public CategoryDto delete(int id) {
         CategoryDto deletedCategory = getById(id);
-        database.deleteCategory(id);
         if(!eventService.getAllAdmin(null, null,
                 List.of(id),
                 null, null, 0, 100).isEmpty()) {
             throw new ConflictError("К категории уже привязаны события.");
         }
+        database.deleteCategory(id);
         return deletedCategory;
     }
 
@@ -38,7 +38,8 @@ public class CategoryService {
         if (!category.isValid()) {
             throw new BadRequestError("Ошибка объекта.", category);
         }
-        if (database.isCategoryNameOccupied(category.getName())) {
+        List<CategoryDto> similarCategories = database.getCategoriesByName(category.getName());
+        if (!similarCategories.isEmpty() && similarCategories.get(0).getId() != category.getId()) {
             throw new ConflictError("Название категории уже занято.", category);
         }
         return database.createCategory(category);
@@ -48,7 +49,8 @@ public class CategoryService {
         if (!category.isValid()) {
             throw new BadRequestError("Ошибка объекта.", category);
         }
-        if (database.isCategoryNameOccupied(category.getName())) {
+        List<CategoryDto> similarCategories = database.getCategoriesByName(category.getName());
+        if (!similarCategories.isEmpty() && similarCategories.get(0).getId() != category.getId()) {
             throw new ConflictError("Название категории уже занято.", category);
         }
         return database.patchCategory(category);

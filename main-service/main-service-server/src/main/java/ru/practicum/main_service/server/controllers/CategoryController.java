@@ -55,10 +55,10 @@ public class CategoryController {
     }
 
     @DeleteMapping("/admin/categories/{catId}")
-    public CategoryDto delete(HttpServletRequest servletRequest,
+    public ResponseEntity<CategoryDto> delete(HttpServletRequest servletRequest,
                               @PathVariable int catId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
-        return service.delete(catId);
+        return new ResponseEntity<>(service.delete(catId), HttpStatus.NO_CONTENT);
     }
 }

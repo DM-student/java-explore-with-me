@@ -33,6 +33,9 @@ public class RequestsService {
         EventDtoResponse event = eventDatabase.getEvent(eventId);
         userDatabase.getUser(userId);
 
+        if (!event.getState().equals("PUBLISHED")) {
+            throw new ConflictError("Заявку на участие нельзя заполнить на неопубликованное событие.");
+        }
         if (userId == event.getInitiator().getId()) {
             throw new ConflictError("Заявку на участие нельзя заполнить на своё событие.");
         }
@@ -69,9 +72,17 @@ public class RequestsService {
         int[] ids = json.getJSONArray("requestIds").toList().stream().mapToInt(x -> (Integer) x).toArray();
         String status = json.getString("status");
 
+        if(status.equals("CONFIRMED") && event.getConfirmedRequests() + ids.length > event.getParticipantLimit()) {
+            throw new ConflictError("Если вы одобрите эти заявки - они превысят лимит.");
+        }
+
         for(int id : ids) {
+            ParticipationRequestDto request = database.getRequest(id);
+            if(request.getStatus().equals("CONFIRMED") && status.equals("REJECTED")) {
+                throw new ConflictError("Нельзя отменить уже одобренную заявку.");
+            }
             if(database.updateRequestStatus(id, status).getEvent() != eventId) {
-                throw new BadRequestError("Одна и заявок указанных в запросе не принадлежит нужному событию.");
+                throw new BadRequestError("Одна из заявок указанных в запросе не принадлежит нужному событию.");
             }
         }
         List<ParticipationRequestDto> confirmedRequests = database.getRequestsForEvent(eventId, "CONFIRMED");

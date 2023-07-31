@@ -17,7 +17,7 @@ import java.util.Map;
 @ControllerAdvice
 public class ErrorHandler {
     @ExceptionHandler
-    public ResponseEntity<Map<String, String>> getResponseEntity(Throwable e) {
+    public ResponseEntity<Map<String, Object>> getResponseEntity(Throwable e) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
         if(e.getClass() == MissingServletRequestParameterException.class) {
@@ -30,7 +30,7 @@ public class ErrorHandler {
             status = HttpStatus.NOT_FOUND;
         }
 
-        Map<String, String> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
         response.put("error", e.getMessage());
         response.put("error_class", e.getClass().getSimpleName());
         if(e instanceof BaseError) {
@@ -40,6 +40,7 @@ public class ErrorHandler {
                 response.put("error_data", jsonData.toString());
             }
         }
+        response.put("error_stack_trace", e.getStackTrace());
         return new ResponseEntity<>(response, status);
     }
 }

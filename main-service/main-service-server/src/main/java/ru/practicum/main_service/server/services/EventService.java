@@ -64,9 +64,18 @@ public class EventService {
     }
     public EventDtoResponse patchEventUser(EventDto eventToPost) {
         EventDtoResponse event = database.getEvent(eventToPost.getId());
+        if (event.getState().equals("PUBLISHED")) {
+            throw new ConflictError("Несанкционированная попытка изменить опубликованное событие.", eventToPost);
+        }
 
         if(eventToPost.getInitiator() != event.getInitiator().getId()) {
             throw new BadRequestError("Вы не являетесь владельцем события.");
+        }
+
+        if(eventToPost.getStateAction() != null) {
+            if (!(eventToPost.getStateAction().equals("SEND_TO_REVIEW") || eventToPost.getStateAction().equals("CANCEL_REVIEW")))  {
+                throw new ConflictError("Несанкционированная попытка изменить состояние события.", eventToPost);
+            }
         }
 
         return patchEvent(eventToPost);
@@ -74,26 +83,35 @@ public class EventService {
 
     public EventDtoResponse patchEvent(EventDto eventToPost) {
         eventToPost.setState(null); // Так как состояние меняется через stateAction.
+        EventDtoResponse oldEvent = database.getEvent(eventToPost.getId());
         if(eventToPost.getStateAction() != null) {
             if (eventToPost.getStateAction().equals("PUBLISH_EVENT")) {
+                if(!oldEvent.getState().equals("PENDING")) {
+                    throw new ConflictError("Не возможна публикация данного события в его текущем состоянии.", eventToPost);
+                }
                 eventToPost.setPublishedOn(formatter.format(LocalDateTime.now()));
                 eventToPost.setState("PUBLISHED");
             }
             if (eventToPost.getStateAction().equals("REJECT_EVENT")) {
+                if(oldEvent.getState().equals("PUBLISHED")) {
+                    throw new ConflictError("Не возможна отмена уже опубликованного события.", eventToPost);
+                }
                 eventToPost.setState("CANCELED");
             }
             if (eventToPost.getStateAction().equals("SEND_TO_REVIEW")) {
                 eventToPost.setState("PENDING");
+            }
+            if (eventToPost.getStateAction().equals("CANCEL_REVIEW")) {
+                if(oldEvent.getState().equals("PUBLISHED")) {
+                    throw new ConflictError("Не возможна отмена уже опубликованного события.", eventToPost);
+                }
+                eventToPost.setState("CANCELED");
             }
         }
         if (!eventToPost.isValidSkipNulls()) {
             throw new BadRequestError("Ошибка объекта.", eventToPost);
         }
 
-        EventDtoResponse oldEvent = database.getEvent(eventToPost.getId());
-        if(!(oldEvent.getState().equals("PENDING") || eventToPost.getState().equals("PENDING"))) {
-            throw new ConflictError("Ошибка состояния события.");
-        }
         return database.updateEvent(eventToPost);
     }
 
