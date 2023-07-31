@@ -17,6 +17,8 @@ public class ErrorHandler {
 
         if (e.getClass() == MissingServletRequestParameterException.class) {
             status = HttpStatus.BAD_REQUEST;
+        } else if (e.getClass() == IllegalArgumentException.class) {
+            status = HttpStatus.BAD_REQUEST;
         }
 
         Map<String, String> response = new HashMap<>();

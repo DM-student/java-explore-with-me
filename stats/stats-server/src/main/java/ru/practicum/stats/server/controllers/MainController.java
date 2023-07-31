@@ -41,11 +41,16 @@ public class MainController {
                                          @RequestParam(defaultValue = "false") Boolean unique) {
         // Тут тоже немного логики в контроллер попало, но если
         // понадобиться расширить функционал - я выведу всю логику в сервис.
-
+        LocalDateTime startTime = LocalDateTime.parse(start, formatter);
+        LocalDateTime endTime = LocalDateTime.parse(end, formatter);
+        if (startTime.isAfter(endTime)) {
+            // Не хочу создавать новый класс...
+            throw new IllegalArgumentException("Дата начала поиска не должна быть позже конца!");
+        }
         List<StatsGroupData> groupStats;
         if (uris != null) {
-            groupStats = stats.getStatsForUris(LocalDateTime.parse(start, formatter),
-                    LocalDateTime.parse(end, formatter),
+            groupStats = stats.getStatsForUris(startTime,
+                    endTime,
                     unique,
                     uris);
         } else {
