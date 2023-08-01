@@ -13,7 +13,7 @@ import ru.practicum.stats.dto.StatsRecord;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
 
 /*
 Я не до конца понимаю принцип работы авто-поиска бинов и зависимостей спринга
@@ -48,7 +48,7 @@ public class StatsHttpClientPrototype {
                 .queryParam("end", "{end}")
                 .queryParam("unique", "{unique}");
 
-        if(uris == null) {
+        if (uris == null) {
             statsServerResponse = rest.exchange(uri.encode().toUriString(), HttpMethod.GET, requestEntity, StatsGroupData[].class,
                     start.format(formatter), end.format(formatter), unique);
         } else {
