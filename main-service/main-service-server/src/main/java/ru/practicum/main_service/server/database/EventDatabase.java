@@ -209,8 +209,8 @@ public class EventDatabase {
     }
 
     public List<EventDtoResponse> getEventsWithAdminFilters(List<Integer> users, List<String> states, List<Integer> categories,
-                                              String rangeStart, String rangeEnd,
-                                              int from, int size) {
+                                                            String rangeStart, String rangeEnd,
+                                                            int from, int size) {
         // Сам поиск
         StringBuilder query = new StringBuilder();
         boolean shouldAddAnd = false;
@@ -417,7 +417,7 @@ public class EventDatabase {
         StatsGroupData[] stats = statsClient.get(LocalDateTime.now().minusYears(100),
                 LocalDateTime.now().plusYears(100), uris, true);
 
-        if(!(stats != null && stats.length > 0)) {
+        if (!(stats != null && stats.length > 0)) {
             return 0;
         }
 

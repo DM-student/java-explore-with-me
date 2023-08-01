@@ -14,8 +14,6 @@ import ru.practicum.main_service.server.utility.errors.ConflictError;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -81,7 +79,7 @@ public class RequestsService {
         }
 
         List<ParticipationRequestDto> requests = database.getRequestsFromIdsList(ids);
-        for(ParticipationRequestDto request : requests) {
+        for (ParticipationRequestDto request : requests) {
             if (request.getStatus().equals("CONFIRMED") && status.equals("REJECTED")) {
                 throw new ConflictError("Нельзя отменить уже одобренную заявку.");
             }

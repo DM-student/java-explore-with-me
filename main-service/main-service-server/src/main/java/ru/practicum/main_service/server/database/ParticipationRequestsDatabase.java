@@ -50,13 +50,13 @@ public class ParticipationRequestsDatabase {
     }
 
     public List<ParticipationRequestDto> getRequestsFromIdsList(List<Integer> ids) {
-        if(ids.isEmpty()) {
+        if (ids.isEmpty()) {
             return new ArrayList<>();
         }
 
         StringBuilder sqlQuery = new StringBuilder("SELECT * FROM participation_requests WHERE id IN (");
-        for(int i = 0; i < ids.size(); i++) {
-            if(i > 0) sqlQuery.append(", ");
+        for (int i = 0; i < ids.size(); i++) {
+            if (i > 0) sqlQuery.append(", ");
             sqlQuery.append(ids.get(i));
         }
         sqlQuery.append(");");
