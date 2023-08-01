@@ -6,13 +6,14 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
 public class ErrorHandler {
     @ExceptionHandler
-    public ResponseEntity<Map<String, String>> getResponseEntity(Throwable e) {
+    public ResponseEntity<Map<String, String>> getResponseEntity(Throwable e, HttpServletRequest request) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
         if (e.getClass() == MissingServletRequestParameterException.class) {
@@ -24,6 +25,7 @@ public class ErrorHandler {
         Map<String, String> response = new HashMap<>();
         response.put("error", e.getMessage());
         response.put("error_class", e.getClass().getSimpleName());
+        response.put("query", request.getQueryString());
         return new ResponseEntity<>(response, status);
     }
 }

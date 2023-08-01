@@ -51,8 +51,3 @@ CREATE TABLE IF NOT EXISTS events_to_compilations (
         compilation_id BIGINT REFERENCES compilations(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS views_to_ips (
-        event_id BIGINT REFERENCES events(id) ON DELETE CASCADE,
-        ip TEXT NOT NULL
-);
-

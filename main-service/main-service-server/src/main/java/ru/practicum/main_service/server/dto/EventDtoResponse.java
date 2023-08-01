@@ -19,5 +19,5 @@ public class EventDtoResponse {
     private Boolean requestModeration;
     private String state;
     private String title;
-    Integer views;
+    private Integer views;
 }

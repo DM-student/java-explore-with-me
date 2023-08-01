@@ -40,7 +40,6 @@ public class EventService {
         if (!Objects.equals(event.getState(), "PUBLISHED")) {
             throw new NotFoundError("Событие не найдено среди опубликованных.");
         }
-        database.incrementViews(id, ip);
         return event;
     }
 
@@ -49,7 +48,6 @@ public class EventService {
         if (event.getInitiator().getId() != userId) {
             throw new BadRequestError("В событиях пользователя не найдено запрошенное.");
         }
-        database.incrementViews(eventId, ip);
         return event;
     }
 
@@ -135,96 +133,7 @@ public class EventService {
             }
         }
 
-        // Сам поиск
-        StringBuilder query = new StringBuilder();
-        boolean shouldAddAnd = false;
-
-        if (text != null) {
-            query.append("(");
-            query.append("annotation LIKE '%");
-            query.append(text);
-            query.append("%' OR ");
-            query.append("title LIKE '%");
-            query.append(text);
-            query.append("%' OR ");
-            query.append("description LIKE '%");
-            query.append(text);
-            query.append("%') ");
-
-            shouldAddAnd = true;
-        }
-
-        if (paid != null) {
-            if (shouldAddAnd) {
-                query.append("AND ");
-            }
-
-            query.append("paid = ");
-            query.append(paid);
-            query.append(" ");
-
-            shouldAddAnd = true;
-        }
-
-        // Категории
-        if (categories != null && !categories.isEmpty()) {
-            if (shouldAddAnd) {
-                query.append("AND ");
-            }
-
-            query.append("(");
-            for (int i = 0; i < categories.size(); i++) {
-                if (i > 0) {
-                    query.append("OR ");
-                }
-                query.append("category_id = ");
-                query.append(categories.get(i));
-                query.append(" ");
-            }
-            query.append(") ");
-            shouldAddAnd = true;
-        }
-
-        // Даты...
-        if (rangeStart != null) {
-            if (shouldAddAnd) {
-                query.append("AND ");
-            }
-
-            query.append("event_date >= '");
-            query.append(rangeStart);
-            query.append("' ");
-            shouldAddAnd = true;
-        }
-
-        if (rangeEnd != null) {
-            if (shouldAddAnd) {
-                query.append("AND ");
-            }
-
-            query.append("event_date < '");
-            query.append(rangeEnd);
-            query.append("' ");
-            shouldAddAnd = true;
-        }
-
-        if (shouldAddAnd) {
-            query.append("AND ");
-        }
-
-        query.append("state = 'PUBLISHED' ");
-
-        if (sort != null) {
-            query.append("ORDER BY ");
-            query.append(sort);
-        }
-
-        List<EventDtoResponse> output = database.getEvents(from, size, query.toString());
-        if (onlyAvailable) {
-            return output.stream().filter(event -> event.getConfirmedRequests() < event.getParticipantLimit())
-                    .collect(Collectors.toList());
-        }
-        return output;
+        return database.getEventsWithFilter(text, paid, categories, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
     }
 
     public List<EventDtoResponse> getAllAdmin(List<Integer> users, List<String> states, List<Integer> categories,
@@ -239,88 +148,7 @@ public class EventService {
             }
         }
 
-        // Сам поиск
-        StringBuilder query = new StringBuilder();
-        boolean shouldAddAnd = false;
-
-        // Юзеры
-
-        if (users != null && !users.isEmpty()) {
-            query.append("(");
-            for (int i = 0; i < users.size(); i++) {
-                if (i > 0) {
-                    query.append("OR ");
-                }
-                query.append("initiator_id = ");
-                query.append(users.get(i));
-                query.append(" ");
-            }
-            query.append(") ");
-            shouldAddAnd = true;
-        }
-
-        // Состояния
-
-        if (states != null && !states.isEmpty()) {
-            if (shouldAddAnd) {
-                query.append("AND ");
-            }
-
-            query.append("(");
-            for (int i = 0; i < states.size(); i++) {
-                if (i > 0) {
-                    query.append("OR ");
-                }
-                query.append("state = '"); // Конечно есть опасность инъекции,
-                query.append(states.get(i)); // но за-то полностью на стороне БД фильтрация происходить будет.
-                query.append("' ");
-            }
-            query.append(") ");
-            shouldAddAnd = true;
-        }
-
-        // Категории
-        if (categories != null && !categories.isEmpty()) {
-            if (shouldAddAnd) {
-                query.append("AND ");
-            }
-
-            query.append("(");
-            for (int i = 0; i < categories.size(); i++) {
-                if (i > 0) {
-                    query.append("OR ");
-                }
-                query.append("category_id = ");
-                query.append(categories.get(i));
-                query.append(" ");
-            }
-            query.append(") ");
-            shouldAddAnd = true;
-        }
-
-        // Даты
-        if (rangeStart != null) {
-            if (shouldAddAnd) {
-                query.append("AND ");
-            }
-
-            query.append("event_date >= '");
-            query.append(rangeStart);
-            query.append("' ");
-            shouldAddAnd = true;
-        }
-
-        if (rangeEnd != null) {
-            if (shouldAddAnd) {
-                query.append("AND ");
-            }
-
-            query.append("event_date <= '");
-            query.append(rangeEnd);
-            query.append("' ");
-        }
-
-        return database.getEvents(from, size, query.toString());
+        return database.getEventsWithAdminFilters(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 }
 

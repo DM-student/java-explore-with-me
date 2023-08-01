@@ -40,7 +40,6 @@ public class ErrorHandler {
                 response.put("error_data", jsonData.toString());
             }
         }
-        response.put("error_stack_trace", e.getStackTrace());
         return new ResponseEntity<>(response, status);
     }
 }

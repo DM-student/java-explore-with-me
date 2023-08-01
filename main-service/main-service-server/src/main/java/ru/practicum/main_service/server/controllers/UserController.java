@@ -15,10 +15,10 @@ import java.util.List;
 @RestController
 public class UserController {
     @Autowired
-    EarlyRequestHandler earlyRequestHandler;
+    private EarlyRequestHandler earlyRequestHandler;
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     @GetMapping("/admin/users")
     public ResponseEntity<List<UserDto>> getUsers(

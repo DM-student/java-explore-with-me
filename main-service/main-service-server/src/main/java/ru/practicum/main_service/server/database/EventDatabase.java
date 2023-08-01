@@ -9,13 +9,17 @@ import ru.practicum.main_service.server.dto.EventDto;
 import ru.practicum.main_service.server.dto.EventDtoResponse;
 import ru.practicum.main_service.server.dto.LocationDto;
 import ru.practicum.main_service.server.dto.MainServiceDtoConstants;
+import ru.practicum.main_service.server.services.EventService;
+import ru.practicum.main_service.server.utility.StatsClient;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
+import ru.practicum.stats.dto.StatsGroupData;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -25,16 +29,19 @@ public class EventDatabase {
     private final JdbcTemplate jdbcTemplate;
     private final UserDatabase userDatabase;
     private final CategoryDatabase categoryDatabase;
+    private final StatsClient statsClient;
     private final ParticipationRequestsDatabase requestsDatabase;
 
     @Autowired
     public EventDatabase(JdbcTemplate jdbcTemplate,
                          UserDatabase userDatabase,
                          CategoryDatabase categoryDatabase,
+                         StatsClient statsClient,
                          ParticipationRequestsDatabase participationRequestsDatabase) {
         this.jdbcTemplate = jdbcTemplate;
         this.userDatabase = userDatabase;
         this.categoryDatabase = categoryDatabase;
+        this.statsClient = statsClient;
         this.requestsDatabase = participationRequestsDatabase;
     }
 
@@ -104,6 +111,188 @@ public class EventDatabase {
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, size, from);
 
         return mapEvents(rs);
+    }
+
+    public List<EventDtoResponse> getEventsWithFilter(String text, Boolean paid, List<Integer> categories,
+                                                      String rangeStart, String rangeEnd, boolean onlyAvailable,
+                                                      EventService.Sort sort, int from, int size) {
+        // Сам поиск
+        StringBuilder query = new StringBuilder();
+        boolean shouldAddAnd = false;
+
+        if (text != null) {
+            query.append("(");
+            query.append("annotation LIKE '%");
+            query.append(text);
+            query.append("%' OR ");
+            query.append("title LIKE '%");
+            query.append(text);
+            query.append("%' OR ");
+            query.append("description LIKE '%");
+            query.append(text);
+            query.append("%') ");
+
+            shouldAddAnd = true;
+        }
+
+        if (paid != null) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
+            query.append("paid = ");
+            query.append(paid);
+            query.append(" ");
+
+            shouldAddAnd = true;
+        }
+
+        // Категории
+        if (categories != null && !categories.isEmpty()) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
+            query.append("(");
+            for (int i = 0; i < categories.size(); i++) {
+                if (i > 0) {
+                    query.append("OR ");
+                }
+                query.append("category_id = ");
+                query.append(categories.get(i));
+                query.append(" ");
+            }
+            query.append(") ");
+            shouldAddAnd = true;
+        }
+
+        // Даты...
+        if (rangeStart != null) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
+            query.append("event_date >= '");
+            query.append(rangeStart);
+            query.append("' ");
+            shouldAddAnd = true;
+        }
+
+        if (rangeEnd != null) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
+            query.append("event_date < '");
+            query.append(rangeEnd);
+            query.append("' ");
+            shouldAddAnd = true;
+        }
+
+        if (shouldAddAnd) {
+            query.append("AND ");
+        }
+
+        query.append("state = 'PUBLISHED' ");
+
+        if (sort != null) {
+            query.append("ORDER BY ");
+            query.append(sort);
+        }
+
+        List<EventDtoResponse> output = getEvents(from, size, query.toString());
+        if (onlyAvailable) {
+            return output.stream().filter(event -> event.getConfirmedRequests() < event.getParticipantLimit())
+                    .collect(Collectors.toList());
+        }
+        return output;
+    }
+
+    public List<EventDtoResponse> getEventsWithAdminFilters(List<Integer> users, List<String> states, List<Integer> categories,
+                                              String rangeStart, String rangeEnd,
+                                              int from, int size) {
+        // Сам поиск
+        StringBuilder query = new StringBuilder();
+        boolean shouldAddAnd = false;
+
+        // Юзеры
+
+        if (users != null && !users.isEmpty()) {
+            query.append("(");
+            for (int i = 0; i < users.size(); i++) {
+                if (i > 0) {
+                    query.append("OR ");
+                }
+                query.append("initiator_id = ");
+                query.append(users.get(i));
+                query.append(" ");
+            }
+            query.append(") ");
+            shouldAddAnd = true;
+        }
+
+        // Состояния
+
+        if (states != null && !states.isEmpty()) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
+            query.append("(");
+            for (int i = 0; i < states.size(); i++) {
+                if (i > 0) {
+                    query.append("OR ");
+                }
+                query.append("state = '"); // Конечно есть опасность инъекции,
+                query.append(states.get(i)); // но за-то полностью на стороне БД фильтрация происходить будет.
+                query.append("' ");
+            }
+            query.append(") ");
+            shouldAddAnd = true;
+        }
+
+        // Категории
+        if (categories != null && !categories.isEmpty()) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
+            query.append("(");
+            for (int i = 0; i < categories.size(); i++) {
+                if (i > 0) {
+                    query.append("OR ");
+                }
+                query.append("category_id = ");
+                query.append(categories.get(i));
+                query.append(" ");
+            }
+            query.append(") ");
+            shouldAddAnd = true;
+        }
+
+        // Даты
+        if (rangeStart != null) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
+            query.append("event_date >= '");
+            query.append(rangeStart);
+            query.append("' ");
+            shouldAddAnd = true;
+        }
+
+        if (rangeEnd != null) {
+            if (shouldAddAnd) {
+                query.append("AND ");
+            }
+
+            query.append("event_date <= '");
+            query.append(rangeEnd);
+            query.append("' ");
+        }
+
+        return getEvents(from, size, query.toString());
     }
 
     public void deleteEvent(int id) {
@@ -222,24 +411,16 @@ public class EventDatabase {
         return getEvent(event.getId());
     }
 
-    public void incrementViews(int eventId, String ip) {
-        String ipCheckSqlQuery =
-                "SELECT * FROM views_to_ips WHERE event_id = ? AND ip = ?;";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(ipCheckSqlQuery, eventId, ip);
-        if (rs.next()) {
-            return;
-        }
-        String sqlQuery =
-                "INSERT INTO views_to_ips (event_id, ip) VALUES (? , ?);";
-
-        jdbcTemplate.update(sqlQuery, eventId, ip);
-    }
-
     public int getViews(int eventId) {
-        String ipCheckSqlQuery =
-                "SELECT count(*) AS count_views FROM views_to_ips WHERE event_id = ?;";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(ipCheckSqlQuery, eventId);
-        rs.next();
-        return rs.getInt("count_views");
+        String[] uris = new String[1];
+        uris[0] = "/events/" + eventId;
+        StatsGroupData[] stats = statsClient.get(LocalDateTime.now().minusYears(100),
+                LocalDateTime.now().plusYears(100), uris, true);
+
+        if(!(stats != null && stats.length > 0)) {
+            return 0;
+        }
+
+        return stats[0].getHits();
     }
 }

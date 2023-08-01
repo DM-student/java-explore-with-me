@@ -14,12 +14,15 @@ import ru.practicum.main_service.server.utility.errors.ConflictError;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class RequestsService {
-    DateTimeFormatter formatter = MainServiceDtoConstants.DATE_TIME_FORMATTER;
+    private static final DateTimeFormatter formatter = MainServiceDtoConstants.DATE_TIME_FORMATTER;
 
     @Autowired
     private ParticipationRequestsDatabase database;
@@ -69,21 +72,27 @@ public class RequestsService {
             throw new BadRequestError("В событиях пользователя не найдено запрошенное.");
         }
 
-        int[] ids = json.getJSONArray("requestIds").toList().stream().mapToInt(x -> (Integer) x).toArray();
+        List<Integer> ids = json.getJSONArray("requestIds").toList().stream()
+                .map(id -> (Integer) id).collect(Collectors.toList());
         String status = json.getString("status");
 
-        if (status.equals("CONFIRMED") && event.getConfirmedRequests() + ids.length > event.getParticipantLimit()) {
+        if (status.equals("CONFIRMED") && event.getConfirmedRequests() + ids.size() > event.getParticipantLimit()) {
             throw new ConflictError("Если вы одобрите эти заявки - они превысят лимит.");
         }
 
-        for (int id : ids) {
-            ParticipationRequestDto request = database.getRequest(id);
+        List<ParticipationRequestDto> requests = database.getRequestsFromIdsList(ids);
+        for(ParticipationRequestDto request : requests) {
             if (request.getStatus().equals("CONFIRMED") && status.equals("REJECTED")) {
                 throw new ConflictError("Нельзя отменить уже одобренную заявку.");
             }
-            if (database.updateRequestStatus(id, status).getEvent() != eventId) {
+            if (request.getEvent() != eventId) {
                 throw new BadRequestError("Одна из заявок указанных в запросе не принадлежит нужному событию.");
             }
+        }
+
+
+        for (int id : ids) {
+            database.updateRequestStatus(id, status);
         }
         List<ParticipationRequestDto> confirmedRequests = database.getRequestsForEvent(eventId, "CONFIRMED");
         List<ParticipationRequestDto> rejectedRequests = database.getRequestsForEvent(eventId, "REJECTED");

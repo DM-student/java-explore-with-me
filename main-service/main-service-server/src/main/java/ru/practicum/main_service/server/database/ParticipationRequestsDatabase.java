@@ -49,6 +49,21 @@ public class ParticipationRequestsDatabase {
         return output.get(0);
     }
 
+    public List<ParticipationRequestDto> getRequestsFromIdsList(List<Integer> ids) {
+        if(ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        StringBuilder sqlQuery = new StringBuilder("SELECT * FROM participation_requests WHERE id IN (");
+        for(int i = 0; i < ids.size(); i++) {
+            if(i > 0) sqlQuery.append(", ");
+            sqlQuery.append(ids.get(i));
+        }
+        sqlQuery.append(");");
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery.toString());
+        return mapRequests(rs);
+    }
+
     public List<ParticipationRequestDto> getRequestsForUser(int id) {
         String sqlQuery = "SELECT * " +
                 "FROM participation_requests " +
