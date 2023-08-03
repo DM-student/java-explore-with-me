@@ -6,14 +6,14 @@ services:
       POSTGRES_DB: "main-service"
       POSTGRES_USER: "main-service-admin"
       POSTGRES_PASSWORD: "admin"
-      PGPORT: 9081
+      PGPORT: 8081
     ports:
-      - "9081:9081"
+      - "8081:8081"
 
   ewm-service:
     build: "./main-service/main-service-server"
     ports:
-      - "9080:9080"
+      - "8080:8080"
 
   stats-db:
     image: postgres:14-alpine

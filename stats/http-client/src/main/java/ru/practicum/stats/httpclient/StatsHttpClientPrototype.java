@@ -6,11 +6,14 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriComponentsBuilder;
+import ru.practicum.stats.dto.StatsConstants;
 import ru.practicum.stats.dto.StatsGroupData;
 import ru.practicum.stats.dto.StatsRecord;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /*
 Я не до конца понимаю принцип работы авто-поиска бинов и зависимостей спринга
@@ -20,6 +23,7 @@ import java.util.*;
  */
 public class StatsHttpClientPrototype {
     private final RestTemplate rest;
+    private final DateTimeFormatter formatter = StatsConstants.DATE_TIME_FORMATTER;
 
     public StatsHttpClientPrototype(String statsServerUrl, RestTemplateBuilder builder) {
         rest = builder
@@ -35,24 +39,27 @@ public class StatsHttpClientPrototype {
         return headers;
     }
 
-    private List<StatsGroupData> get(LocalDateTime start, LocalDateTime end, @Nullable List<String> uris, boolean unique) {
-        Map<String, Object> parameters = new HashMap<>();
-
-        parameters.put("start", start);
-        parameters.put("end", start);
-        parameters.put("unique", start);
-        if (uris != null) {
-            parameters.put("uris", uris);
-        }
-
+    public StatsGroupData[] get(LocalDateTime start, LocalDateTime end, @Nullable String[] uris, boolean unique) {
         HttpEntity<Object> requestEntity = new HttpEntity<>(null, defaultHeaders());
         ResponseEntity<StatsGroupData[]> statsServerResponse;
 
-        statsServerResponse = rest.exchange("/stats", HttpMethod.GET, requestEntity, StatsGroupData[].class, parameters);
-        return Arrays.asList(statsServerResponse.getBody());
+        UriComponentsBuilder uri = UriComponentsBuilder.fromPath("/stats")
+                .queryParam("start", "{start}")
+                .queryParam("end", "{end}")
+                .queryParam("unique", "{unique}");
+
+        if (uris == null) {
+            statsServerResponse = rest.exchange(uri.encode().toUriString(), HttpMethod.GET, requestEntity, StatsGroupData[].class,
+                    start.format(formatter), end.format(formatter), unique);
+        } else {
+            uri.queryParam("uris", "{uris}");
+            statsServerResponse = rest.exchange(uri.encode().toUriString(), HttpMethod.GET, requestEntity, StatsGroupData[].class,
+                    start.format(formatter), end.format(formatter), unique, uris);
+        }
+        return statsServerResponse.getBody();
     }
 
-    private void hit(StatsRecord statsToHit) throws StatsHttpClientHitException {
+    public void hit(StatsRecord statsToHit) throws StatsHttpClientHitException {
         HttpEntity<StatsRecord> requestEntity = new HttpEntity<>(statsToHit, defaultHeaders());
         ResponseEntity<Object> statsServerResponse;
 
