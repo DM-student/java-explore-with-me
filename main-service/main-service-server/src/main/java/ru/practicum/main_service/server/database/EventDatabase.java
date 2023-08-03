@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.practicum.main_service.server.dto.EventDto;
-import ru.practicum.main_service.server.dto.EventDtoResponse;
-import ru.practicum.main_service.server.dto.LocationDto;
-import ru.practicum.main_service.server.dto.MainServiceDtoConstants;
+import ru.practicum.main_service.server.dto.*;
 import ru.practicum.main_service.server.services.EventService;
 import ru.practicum.main_service.server.utility.StatsClient;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
@@ -18,7 +15,9 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -46,19 +45,22 @@ public class EventDatabase {
     }
 
     public List<EventDtoResponse> mapEvents(SqlRowSet rs) {
-        List<EventDtoResponse> output = new ArrayList<>();
+        List<EventDtoResponse> events = new ArrayList<>();
+        List<Integer> userIds = new ArrayList<>();
+        List<Integer> categoryIds = new ArrayList<>();
+        List<Integer> eventIds = new ArrayList<>();
         while (rs.next()) {
             EventDtoResponse event = new EventDtoResponse();
             event.setAnnotation(rs.getString("annotation"));
-            event.setCategory(categoryDatabase.getCategory(rs.getInt("category_id")));
-
-            event.setConfirmedRequests(requestsDatabase.getConfirmedRequestsCountForEvent(rs.getInt("id")));
 
             event.setCreatedOn(formatter.format(rs.getTimestamp("created_on").toLocalDateTime()));
             event.setDescription(rs.getString("description"));
             event.setEventDate(formatter.format(rs.getTimestamp("event_date").toLocalDateTime()));
             event.setId(rs.getInt("id"));
-            event.setInitiator(userDatabase.getUser(rs.getInt("initiator_id")));
+
+            eventIds.add(event.getId());
+            categoryIds.add(rs.getInt("category_id"));
+            userIds.add(rs.getInt("initiator_id"));
 
             LocationDto location = new LocationDto();
             location.setLat(rs.getDouble("location_lat"));
@@ -75,11 +77,21 @@ public class EventDatabase {
             event.setRequestModeration(rs.getBoolean("request_moderation"));
             event.setState(rs.getString("state"));
             event.setTitle(rs.getString("title"));
-            event.setViews(getViews(rs.getInt("id")));
 
-            output.add(event);
+            events.add(event);
         }
-        return output;
+        Map<Integer, UserDto> usersMap = userDatabase.getUsersMap(userIds);
+        Map<Integer, CategoryDto> categoriesMap = categoryDatabase.getCategoriesMap(categoryIds);
+        Map<Integer, Integer> viewsMap = getViewsMap(eventIds);
+        Map<Integer, Integer> requestsCountMap = requestsDatabase.getConfirmedRequestsCountForEventMap(eventIds);
+        for (int i = 0; i < events.size(); i++) {
+            events.get(i).setCategory(categoriesMap.get(categoryIds.get(i)));
+            events.get(i).setConfirmedRequests(requestsCountMap.get(eventIds.get(i)));
+            events.get(i).setInitiator(usersMap.get(userIds.get(i)));
+            events.get(i).setViews(viewsMap.get(eventIds.get(i)));
+        }
+
+        return events;
     }
 
     public EventDtoResponse getEvent(Integer id) {
@@ -99,6 +111,26 @@ public class EventDatabase {
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, size, from);
 
         return mapEvents(rs);
+    }
+
+    public Map<Integer, EventDtoResponse> getEventsMap(List<Integer> ids) {
+        if (ids.isEmpty()) {
+            return new HashMap<>();
+        }
+        StringBuilder sqlQuery = new StringBuilder("SELECT * FROM events WHERE id IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            if (i > 0) sqlQuery.append(", ");
+            sqlQuery.append(ids.get(i));
+        }
+        sqlQuery.append(");");
+
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery.toString());
+
+        Map<Integer, EventDtoResponse> EventsMap = new HashMap<>();
+        for (EventDtoResponse event : mapEvents(rs)) {
+            EventsMap.put(event.getId(), event);
+        }
+        return EventsMap;
     }
 
     public List<EventDtoResponse> getEvents(int from, int size, String query) {
@@ -422,5 +454,30 @@ public class EventDatabase {
         }
 
         return stats[0].getHits();
+    }
+
+    public Map<Integer, Integer> getViewsMap(List<Integer> ids) {
+        if (ids.isEmpty()) {
+            return new HashMap<>();
+        }
+        String[] uris = new String[ids.size()];
+        for (int i = 0; i < ids.size(); i++) {
+            uris[i] = "/events/" + ids.get(i);
+        }
+        StatsGroupData[] stats = statsClient.get(LocalDateTime.now().minusYears(100),
+                LocalDateTime.now().plusYears(100), uris, true);
+
+        Map<Integer, Integer> statsMap = new HashMap<>();
+
+        for (StatsGroupData stat : stats) {
+            statsMap.put(Integer.parseInt(stat.getUri().substring(8)), stat.getHits());
+        }
+
+        for (int id : ids) {
+            if (!statsMap.containsKey(id)) {
+                statsMap.put(id, 0);
+            }
+        }
+        return statsMap;
     }
 }

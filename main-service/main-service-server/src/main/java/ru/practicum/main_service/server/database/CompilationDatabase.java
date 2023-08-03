@@ -6,11 +6,11 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.practicum.main_service.server.dto.CompilationDto;
 import ru.practicum.main_service.server.dto.CompilationDtoResponse;
-import ru.practicum.main_service.server.dto.EventDtoResponse;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class CompilationDatabase {
@@ -34,15 +34,19 @@ public class CompilationDatabase {
             compilation.setTitle(rs.getString("title"));
             compilation.setPinned(rs.getBoolean("pinned"));
 
+            // Тут я сколько не ломал голову - так и не придумал способ избежания цикличных вызовов.
+            // По крайней мере список событий для каждой подборки вызывается одним запросом.
             String sqlQuery =
                     "SELECT * FROM events_to_compilations WHERE compilation_id = ?;";
             SqlRowSet subrs = jdbcTemplate.queryForRowSet(sqlQuery, compilation.getId());
 
-            List<EventDtoResponse> events = new ArrayList<>();
+            List<Integer> eventsIds = new ArrayList<>();
             while (subrs.next()) {
-                events.add(eventDatabase.getEvent(subrs.getInt("event_id")));
+                eventsIds.add(subrs.getInt("event_id"));
             }
-            compilation.setEvents(events);
+
+            // Тут будет ровно один вызов который вернёт весь список событий для текущей подборки.
+            compilation.setEvents(eventDatabase.getEventsMap(eventsIds).values().stream().collect(Collectors.toList()));
 
             output.add(compilation);
         }

@@ -32,7 +32,7 @@ public class ErrorHandler {
 
         Map<String, Object> response = new HashMap<>();
         response.put("error", e.getMessage());
-        response.put("error_class", e.getClass().getSimpleName());
+        response.put("error_class", e.getStackTrace());
         if (e instanceof BaseError) {
             BaseError error = (BaseError) e;
             if (error.getData() != null) {

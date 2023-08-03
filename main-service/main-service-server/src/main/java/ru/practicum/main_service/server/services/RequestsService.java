@@ -88,10 +88,8 @@ public class RequestsService {
             }
         }
 
+        database.updateRequestsStatus(ids, status);
 
-        for (int id : ids) {
-            database.updateRequestStatus(id, status);
-        }
         List<ParticipationRequestDto> confirmedRequests = database.getRequestsForEvent(eventId, "CONFIRMED");
         List<ParticipationRequestDto> rejectedRequests = database.getRequestsForEvent(eventId, "REJECTED");
 

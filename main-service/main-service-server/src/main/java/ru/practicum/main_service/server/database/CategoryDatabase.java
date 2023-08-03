@@ -8,7 +8,9 @@ import ru.practicum.main_service.server.dto.CategoryDto;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class CategoryDatabase {
@@ -47,6 +49,26 @@ public class CategoryDatabase {
                 "SELECT * FROM categories WHERE name = ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, name);
         return mapCategories(rs);
+    }
+
+    public Map<Integer, CategoryDto> getCategoriesMap(List<Integer> ids) {
+        if (ids.isEmpty()) {
+            return new HashMap<>();
+        }
+        StringBuilder sqlQuery = new StringBuilder("SELECT * FROM categories WHERE id IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            if (i > 0) sqlQuery.append(", ");
+            sqlQuery.append(ids.get(i));
+        }
+        sqlQuery.append(");");
+
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery.toString());
+
+        Map<Integer, CategoryDto> CategoriesMap = new HashMap<>();
+        for (CategoryDto category : mapCategories(rs)) {
+            CategoriesMap.put(category.getId(), category);
+        }
+        return CategoriesMap;
     }
 
     public List<CategoryDto> getAllCategories(int from, int limit) {

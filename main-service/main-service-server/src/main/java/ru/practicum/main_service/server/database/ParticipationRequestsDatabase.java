@@ -12,7 +12,9 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class ParticipationRequestsDatabase {
@@ -124,6 +126,19 @@ public class ParticipationRequestsDatabase {
         return getRequest(id);
     }
 
+    public void updateRequestsStatus(List<Integer> ids, String status) {
+        if (ids.isEmpty()) {
+            return;
+        }
+        StringBuilder sqlQuery = new StringBuilder("UPDATE participation_requests SET status = ? WHERE id IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            if (i > 0) sqlQuery.append(", ");
+            sqlQuery.append(ids.get(i));
+        }
+        sqlQuery.append(");");
+        jdbcTemplate.update(sqlQuery.toString(), status);
+    }
+
     public int getConfirmedRequestsCountForEvent(int id) {
         final String confirmed = "CONFIRMED";
 
@@ -135,5 +150,29 @@ public class ParticipationRequestsDatabase {
         return rs.getInt("amount");
     }
 
+    public Map<Integer, Integer> getConfirmedRequestsCountForEventMap(List<Integer> ids) {
+        if (ids.isEmpty()) {
+            return new HashMap<>();
+        }
+        StringBuilder sqlQuery = new StringBuilder("SELECT event_id, COUNT(*) AS amount " +
+                "FROM participation_requests " +
+                "WHERE status like 'CONFIRMED' AND event_id IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            if (i > 0) sqlQuery.append(", ");
+            sqlQuery.append(ids.get(i));
+        }
+        sqlQuery.append(") GROUP BY event_id;");
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery.toString());
 
+        HashMap<Integer, Integer> countMap = new HashMap<>();
+        while (rs.next()) {
+            countMap.put(rs.getInt("event_id"), rs.getInt("amount"));
+        }
+        for (int id : ids) {
+            if (!countMap.containsKey(id)) {
+                countMap.put(id, 0);
+            }
+        }
+        return countMap;
+    }
 }

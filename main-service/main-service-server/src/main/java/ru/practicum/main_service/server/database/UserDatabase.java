@@ -8,7 +8,9 @@ import ru.practicum.main_service.server.dto.UserDto;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class UserDatabase {
@@ -49,6 +51,26 @@ public class UserDatabase {
                 "OFFSET ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, size, from);
         return mapUsers(rs);
+    }
+
+    public Map<Integer, UserDto> getUsersMap(List<Integer> ids) {
+        if (ids.isEmpty()) {
+            return new HashMap<>();
+        }
+        StringBuilder sqlQuery = new StringBuilder("SELECT * FROM users WHERE id IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            if (i > 0) sqlQuery.append(", ");
+            sqlQuery.append(ids.get(i));
+        }
+        sqlQuery.append(");");
+
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery.toString());
+
+        Map<Integer, UserDto> usersMap = new HashMap<>();
+        for (UserDto user : mapUsers(rs)) {
+            usersMap.put(user.getId(), user);
+        }
+        return usersMap;
     }
 
     public List<UserDto> getUsersByName(String name) {
