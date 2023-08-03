@@ -126,11 +126,11 @@ public class EventDatabase {
 
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery.toString());
 
-        Map<Integer, EventDtoResponse> EventsMap = new HashMap<>();
+        Map<Integer, EventDtoResponse> eventsMap = new HashMap<>();
         for (EventDtoResponse event : mapEvents(rs)) {
-            EventsMap.put(event.getId(), event);
+            eventsMap.put(event.getId(), event);
         }
-        return EventsMap;
+        return eventsMap;
     }
 
     public List<EventDtoResponse> getEvents(int from, int size, String query) {

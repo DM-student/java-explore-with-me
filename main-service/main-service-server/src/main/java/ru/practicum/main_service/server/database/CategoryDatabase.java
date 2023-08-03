@@ -64,11 +64,11 @@ public class CategoryDatabase {
 
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery.toString());
 
-        Map<Integer, CategoryDto> CategoriesMap = new HashMap<>();
+        Map<Integer, CategoryDto> categoriesMap = new HashMap<>();
         for (CategoryDto category : mapCategories(rs)) {
-            CategoriesMap.put(category.getId(), category);
+            categoriesMap.put(category.getId(), category);
         }
-        return CategoriesMap;
+        return categoriesMap;
     }
 
     public List<CategoryDto> getAllCategories(int from, int limit) {
