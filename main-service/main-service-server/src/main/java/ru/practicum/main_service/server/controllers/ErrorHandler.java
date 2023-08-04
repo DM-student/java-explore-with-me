@@ -11,6 +11,7 @@ import ru.practicum.main_service.server.utility.errors.BaseError;
 import ru.practicum.main_service.server.utility.errors.ConflictError;
 import ru.practicum.main_service.server.utility.errors.NotFoundError;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public class ErrorHandler {
 
         Map<String, Object> response = new HashMap<>();
         response.put("error", e.getMessage());
-        response.put("error_class", e.getStackTrace());
+        response.put("error_class", e.getClass().getSimpleName());
         if (e instanceof BaseError) {
             BaseError error = (BaseError) e;
             if (error.getData() != null) {
@@ -40,6 +41,7 @@ public class ErrorHandler {
                 response.put("error_data", jsonData.toString());
             }
         }
+        response.put("error_trace", Arrays.stream(e.getStackTrace()).limit(4).toArray());
         return new ResponseEntity<>(response, status);
     }
 }
