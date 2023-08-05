@@ -23,7 +23,7 @@ public class CommentDto {
         if (creationDate == null) return false;
         if (edited == null) return false;
         if (!Helpers.validateDateTimeFormat(creationDate, formatter)) return false;
-        if (edited == null) return false;
+        // if (edited == null) return false; Ругается код-стайл проверка.
         if (text == null || text.isBlank()) return false;
         return true;
     }
