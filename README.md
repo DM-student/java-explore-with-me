@@ -2,7 +2,7 @@
 
 ## Ссылка на ПР, требуемая в задании:
 
-(Тут будет ссылка)
+https://github.com/DM-student/java-explore-with-me/pull/6
 
 ---
 
