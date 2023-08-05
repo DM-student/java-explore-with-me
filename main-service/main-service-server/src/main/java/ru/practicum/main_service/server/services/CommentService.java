@@ -65,7 +65,7 @@ public class CommentService {
 
     public CommentResponseDto postComment(CommentDto comment) {
         comment.setEdited(false);
-        comment.setCreation_date(LocalDateTime.now().format(formatter));
+        comment.setCreationDate(LocalDateTime.now().format(formatter));
 
         if (!comment.isValidToPost()) {
             throw new BadRequestError("Ошибка объекта", comment);

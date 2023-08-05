@@ -7,12 +7,12 @@ import java.time.format.DateTimeFormatter;
 
 @Data
 public class CommentDto {
-    private final static DateTimeFormatter formatter = MainServiceDtoConstants.DATE_TIME_FORMATTER;
+    private static final DateTimeFormatter formatter = MainServiceDtoConstants.DATE_TIME_FORMATTER;
 
     private Integer id;
     private Integer eventId;
     private Integer userId;
-    private String creation_date;
+    private String creationDate;
     private String text;
     private Boolean edited;
 
@@ -20,9 +20,9 @@ public class CommentDto {
     public boolean isValidToPost() {
         if (eventId == null) return false;
         if (userId == null) return false;
-        if (creation_date == null) return false;
+        if (creationDate == null) return false;
         if (edited == null) return false;
-        if (!Helpers.validateDateTimeFormat(creation_date, formatter)) return false;
+        if (!Helpers.validateDateTimeFormat(creationDate, formatter)) return false;
         if (edited == null) return false;
         if (text == null || text.isBlank()) return false;
         return true;

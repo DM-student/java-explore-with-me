@@ -92,7 +92,7 @@ public class CommentDatabase {
                 "RETURNING *";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery,
                 comment.getEventId(), comment.getUserId(),
-                LocalDateTime.parse(comment.getCreation_date(), formatter), comment.getText(), comment.getEdited());
+                LocalDateTime.parse(comment.getCreationDate(), formatter), comment.getText(), comment.getEdited());
         return mapComments(rs).get(0);
     }
 
