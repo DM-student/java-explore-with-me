@@ -1,7 +1,6 @@
 package ru.practicum.main_service.server.dto;
 
 import lombok.Data;
-import ru.practicum.main_service.server.dto.UserDto;
 
 @Data
 public class CommentResponseDto {

@@ -38,9 +38,18 @@ public class CommentService {
         return oldComment;
     }
 
+    public CommentResponseDto deleteCommentById(Integer userId, Integer id) {
+        CommentResponseDto oldComment = commentDatabase.getComment(id);
+        if (!Objects.equals(oldComment.getUser().getId(), userId)) {
+            throw new ConflictError("Вы не можете удалить чужой комментарий.");
+        }
+        commentDatabase.deleteComment(id);
+        return oldComment;
+    }
+
     public CommentResponseDto getCommentById(Integer userId, Integer id) {
         CommentResponseDto comment = commentDatabase.getComment(id);
-        if(!Objects.equals(comment.getUser().getId(), userId)) {
+        if (!Objects.equals(comment.getUser().getId(), userId)) {
             throw new ConflictError("Вы не можете получить доступ к чужому комментарию.");
         }
         return comment;
@@ -58,15 +67,15 @@ public class CommentService {
         comment.setEdited(false);
         comment.setCreation_date(LocalDateTime.now().format(formatter));
 
-        if(!comment.isValidToPost()) {
+        if (!comment.isValidToPost()) {
             throw new BadRequestError("Ошибка объекта", comment);
         }
 
         EventDtoResponse event = eventDatabase.getEvent(comment.getEventId());
-        if(LocalDateTime.parse(event.getEventDate(), formatter).isAfter(LocalDateTime.now())) {
+        if (LocalDateTime.parse(event.getEventDate(), formatter).isAfter(LocalDateTime.now())) {
             throw new ConflictError("Нельзя опубликовать комментарий о событии, что ещё не случилось.");
         }
-        if(!Objects.equals(event.getInitiator().getId(), comment.getUserId())
+        if (!Objects.equals(event.getInitiator().getId(), comment.getUserId())
                 &&
                 !requestsDatabase.hasConfirmedRequestFromUser(comment.getEventId(), comment.getUserId())) {
             throw new ConflictError("Нельзя опубликовать комментарий о событии если вы не владелец или участник.");
@@ -77,12 +86,12 @@ public class CommentService {
     public CommentResponseDto updateComment(CommentDto comment) {
         comment.setEdited(true);
 
-        if(!comment.isValidToEdit()) {
+        if (!comment.isValidToEdit()) {
             throw new BadRequestError("Ошибка объекта", comment);
         }
 
         CommentResponseDto oldComment = commentDatabase.getComment(comment.getId());
-        if(!Objects.equals(oldComment.getUser().getId(), comment.getUserId())) {
+        if (!Objects.equals(oldComment.getUser().getId(), comment.getUserId())) {
             throw new ConflictError("Вы не автор комментария.");
         }
         return commentDatabase.editComment(comment);

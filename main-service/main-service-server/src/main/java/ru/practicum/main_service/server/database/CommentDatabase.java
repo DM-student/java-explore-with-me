@@ -46,7 +46,7 @@ public class CommentDatabase {
             comments.add(comment);
         }
         Map<Integer, UserDto> userMap = userDatabase.getUsersMap(userIds);
-        for(int i = 0; i < comments.size(); i++) {
+        for (int i = 0; i < comments.size(); i++) {
             comments.get(i).setUser(userMap.get(userIds.get(i)));
         }
         return comments;
@@ -56,9 +56,9 @@ public class CommentDatabase {
         String sqlQuery = "SELECT * " +
                 "FROM comments " +
                 "WHERE event_id = ? " +
+                "ORDER BY created_on DESC " +
                 "LIMIT ? " +
-                "OFFSET ?" +
-                "ORDER BY created_on DESC;";
+                "OFFSET ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, eventId, size, from);
         return mapComments(rs);
     }
@@ -67,16 +67,16 @@ public class CommentDatabase {
         String sqlQuery = "SELECT * " +
                 "FROM comments " +
                 "WHERE user_id = ? " +
+                "ORDER BY created_on DESC " +
                 "LIMIT ? " +
-                "OFFSET ? " +
-                "ORDER BY created_on DESC;";
+                "OFFSET ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, userId, size, from);
         return mapComments(rs);
     }
 
     public CommentResponseDto getComment(Integer id) {
         String sqlQuery =
-                "SELECT * FROM comments WHERE id = ? ORDER BY created_on DESC;";
+                "SELECT * FROM comments WHERE id = ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, id);
         List<CommentResponseDto> output = mapComments(rs);
         if (output.isEmpty()) {
