@@ -91,7 +91,8 @@ public class CommentDatabase {
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery,
                 comment.getEventId(), comment.getUserId(),
                 LocalDateTime.parse(comment.getCreationDate(), formatter), comment.getText(), comment.getEdited());
-        return mapComments(rs).get(0);
+        return mapComments(rs).get(0); // Тут я оставил так, потому что если по какой-то
+                                       // причине не будет создан комментарий, то ошибка "выкинется" ещё на запросе.
     }
 
     public void deleteComment(int id) {
