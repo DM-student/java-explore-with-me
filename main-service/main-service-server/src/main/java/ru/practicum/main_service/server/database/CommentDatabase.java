@@ -78,11 +78,9 @@ public class CommentDatabase {
         String sqlQuery =
                 "SELECT * FROM comments WHERE id = ?;";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, id);
-        List<CommentResponseDto> output = mapComments(rs);
-        if (output.isEmpty()) {
-            throw new NotFoundError("Не найден комментарий.", id);
-        }
-        return output.get(0);
+        return mapComments(rs).stream()
+                .findFirst()
+                .orElseThrow(() -> new NotFoundError("Не найден комментарий.", id));
     }
 
     public CommentResponseDto createComment(CommentDto comment) {
@@ -104,8 +102,11 @@ public class CommentDatabase {
 
     public CommentResponseDto editComment(CommentDto comment) {
         String sqlQuery =
-                "UPDATE comments SET comment_text = ?, edited = ? WHERE id = ?;";
-        jdbcTemplate.update(sqlQuery, comment.getText(), comment.getEdited(), comment.getId());
-        return getComment(comment.getId());
+                "UPDATE comments SET comment_text = ?, edited = ? WHERE id = ? RETURNING *;";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, comment.getText(), comment.getEdited(), comment.getId());
+        return mapComments(rs)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new NotFoundError("Не найден комментарий.", comment.getId()));
     }
 }

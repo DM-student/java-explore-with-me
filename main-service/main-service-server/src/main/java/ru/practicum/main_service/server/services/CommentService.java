@@ -19,7 +19,7 @@ import java.util.Objects;
 
 @Service
 public class CommentService {
-    DateTimeFormatter formatter = MainServiceDtoConstants.DATE_TIME_FORMATTER;
+    private static final DateTimeFormatter formatter = MainServiceDtoConstants.DATE_TIME_FORMATTER;
 
     @Autowired
     private CommentDatabase commentDatabase;

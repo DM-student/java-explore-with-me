@@ -30,7 +30,7 @@ public class CommentController {
     }
 
     @GetMapping("/admin/comments/user/{userId}")
-    public List<CommentResponseDto> adminGetForUser(HttpServletRequest servletRequest,
+    public List<CommentResponseDto> adminGetCommentForUser(HttpServletRequest servletRequest,
                                                     @PathVariable Integer userId,
                                                     @RequestParam(defaultValue = "0") Integer from,
                                                     @RequestParam(defaultValue = "10") Integer size) throws StatsHttpClientHitException {
@@ -40,7 +40,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/admin/comments/{commentId}")
-    public ResponseEntity<CommentResponseDto> adminDelete(HttpServletRequest servletRequest,
+    public ResponseEntity<CommentResponseDto> adminDeleteComment(HttpServletRequest servletRequest,
                                                           @PathVariable int commentId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
@@ -48,7 +48,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentId}")
-    public ResponseEntity<CommentResponseDto> delete(HttpServletRequest servletRequest,
+    public ResponseEntity<CommentResponseDto> deleteComment(HttpServletRequest servletRequest,
                                                      @PathVariable int commentId, @RequestParam Integer userId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
@@ -56,7 +56,7 @@ public class CommentController {
     }
 
     @GetMapping("/comments/{commentId}")
-    public CommentResponseDto getById(HttpServletRequest servletRequest,
+    public CommentResponseDto getCommentById(HttpServletRequest servletRequest,
                                       @PathVariable int commentId, @RequestParam Integer userId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
 
@@ -74,7 +74,7 @@ public class CommentController {
     }
 
     @PostMapping("/comments/event/{eventId}")
-    public ResponseEntity<CommentResponseDto> post(HttpServletRequest servletRequest,
+    public ResponseEntity<CommentResponseDto> postComment(HttpServletRequest servletRequest,
                                                    @RequestBody CommentDto comment,
                                                    @PathVariable Integer eventId, @RequestParam Integer userId) throws StatsHttpClientHitException {
         earlyRequestHandler.handle(servletRequest);
@@ -86,7 +86,7 @@ public class CommentController {
     }
 
     @PatchMapping("/comments/{commentId}")
-    public ResponseEntity<CommentResponseDto> patch(HttpServletRequest servletRequest,
+    public ResponseEntity<CommentResponseDto> patchComment(HttpServletRequest servletRequest,
                                                     @RequestBody CommentDto comment,
                                                     @PathVariable Integer commentId,
                                                     @RequestParam Integer userId) throws StatsHttpClientHitException {
