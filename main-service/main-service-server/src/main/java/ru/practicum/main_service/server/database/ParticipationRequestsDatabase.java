@@ -83,6 +83,15 @@ public class ParticipationRequestsDatabase {
         return !mapRequests(rs).isEmpty();
     }
 
+    public boolean hasConfirmedRequestFromUser(int eventId, int userId) {
+        String sqlQuery = "SELECT * " +
+                "FROM participation_requests " +
+                "WHERE event_id = ? AND requester_id = ? AND status = 'CONFIRMED';";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, eventId, userId);
+
+        return !mapRequests(rs).isEmpty();
+    }
+
     public List<ParticipationRequestDto> getRequestsForEvent(int id) {
         String sqlQuery = "SELECT * " +
                 "FROM participation_requests " +
